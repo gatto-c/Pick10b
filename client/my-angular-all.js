@@ -169,6 +169,107 @@ angular
 
 .module("myPick10")
 
+.service('ErgastCalls', ['$log', 'MyHttp',
+
+  /**
+   * wrapper for all ergast based calls to ergast api
+   * @param $log
+   * @param MyHttp
+   * @returns {{}}
+   */
+  function($log, MyHttp){
+    var ErgastCalls = {};
+
+    ErgastCalls.getRaceSchedule = function(year) {
+      var myPromise;
+
+      $log.info('ergastCalls.getRaceSchedule: ', year);
+
+      //api call format: http://ergast.com/api/f1/year
+      myPromise = MyHttp
+        .path('http://ergast.com/api/f1')
+        .path(year)
+        .path('results.json?limit=500')
+        .get()
+        .catch(function () {
+          myPromise = null
+        });
+
+      return myPromise;
+    };
+
+    /**
+     * returns race results for the specified race identified by year (xxxx) and race number (1-xx)
+     * @param year
+     * @param race
+     * @returns {*}
+     */
+    ErgastCalls.getRaceResults = function(year, race) {
+      var myPromise;
+
+      $log.info('ergastCalls.getRaceResults: ', year, '/', race);
+
+      //api call format: http://ergast.com/api/f1/year/race/results.json
+      myPromise = MyHttp
+        .path('http://ergast.com/api/f1')
+        .path(year)
+        .path(race)
+        .path('results.json?limit=30')
+        .get()
+        .catch(function () {
+          myPromise = null
+        });
+
+      return myPromise;
+    };
+
+    return ErgastCalls;
+  }]);
+}());
+
+;(function() {
+"use strict";
+
+angular
+
+.module("myPick10")
+
+.controller('raceResultsController',
+
+['$scope', 'SampleProxy', '$log','MyHttp', 'ErgastCalls',
+
+function($scope, samples, $log, MyHttp, ErgastCalls){
+
+    $log.debug('>>>>>Here2!!!!');
+
+    getRaceResults();
+
+    function getRaceResults() {
+        $log.debug('>>>>>Here3!!!!');
+
+
+        var year = 2015,
+            race = 16;
+
+        ErgastCalls.getRaceSchedule(year).then(function(results) {
+          $log.debug('race schedule results for ', year, ': ', results);
+        });
+
+        //ergastCalls.getRaceResults(vm.year, vm.race).then(function(results) {
+        //  $log.debug('race results for ', vm.year, '/', vm.race, ': ', results);
+        //});
+
+    }
+}]);
+}());
+
+;(function() {
+"use strict";
+
+angular
+
+.module("myPick10")
+
 .controller('sampleCtrl',
 
 ['$scope','SampleProxy',
@@ -181,14 +282,33 @@ function($scope,samples){
         $scope.calculated=sample;
       });
   }
-
 }]);
 }());
 
 ;(function() {
 "use strict";
 
-angular.module("myPick10").run(["$templateCache", function($templateCache) {$templateCache.put("components/sample/sample.ng.template.html","<div>\n    Try a number here: <input type=\"number\" name=\"input\" ng-model=\"sample\" ng-change=\"calculate()\"><br/>\n    After calling to the server, the value is now: <span>{{calculated}}</span>\n</div>\n");}]);
+angular.module("myPick10").run(["$templateCache", function($templateCache) {$templateCache.put("raceResults/raceResults.ng.template.html","<div>\n  <b>Race Results for</b>\n  <!--<form>-->\n    <!--Year1:<input type=\"number\" ng-model=\"rr.year\" name=\"year\" min=\"1950\" max=\"2015\"/>-->\n    <!--Race1:<input type=\"number\" ng-model=\"rr.race\" name=\"race\" min=\"1\" max=\"20\"/>-->\n  <!--</form>-->\n</div>\n");
+$templateCache.put("components/sample/sample.ng.template.html","<div>\n    Try a number here: <input type=\"number\" name=\"input\" ng-model=\"sample\" ng-change=\"calculate()\"><br/>\n    After calling to the server, the value is now: <span>{{calculated}}</span>\n</div>\n");}]);
+}());
+
+;(function() {
+"use strict";
+
+angular
+
+.module("myPick10")
+
+.directive('raceResults', function() {
+    return {
+      restrict: 'E'
+      , transclude: true
+      , replace: true
+      , scope: true
+      , controller: 'raceResultsController'
+      , templateUrl: 'raceResults/raceResults.ng.template.html'
+    };
+  });
 }());
 
 ;(function() {

@@ -14,5 +14,4 @@ function($scope,samples){
         $scope.calculated=sample;
       });
   }
-
 }]);
