@@ -8,19 +8,14 @@ angular
 
 function($scope, samples, $log, MyHttp, ErgastCalls){
 
-    $log.debug('>>>>>Here2!!!!');
+    $scope.year = 2015;
+    $scope.race = 16;
 
     getRaceResults();
 
     function getRaceResults() {
-        $log.debug('>>>>>Here3!!!!');
-
-
-        var year = 2015,
-            race = 16;
-
-        ErgastCalls.getRaceSchedule(year).then(function(results) {
-          $log.debug('race schedule results for ', year, ': ', results);
+        ErgastCalls.getRaceSchedule($scope.year).then(function(results) {
+          $log.debug('race schedule results for ', $scope.year, ': ', results);
         });
 
         //ergastCalls.getRaceResults(vm.year, vm.race).then(function(results) {

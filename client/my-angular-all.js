@@ -240,19 +240,14 @@ angular
 
 function($scope, samples, $log, MyHttp, ErgastCalls){
 
-    $log.debug('>>>>>Here2!!!!');
+    $scope.year = 2015;
+    $scope.race = 16;
 
     getRaceResults();
 
     function getRaceResults() {
-        $log.debug('>>>>>Here3!!!!');
-
-
-        var year = 2015,
-            race = 16;
-
-        ErgastCalls.getRaceSchedule(year).then(function(results) {
-          $log.debug('race schedule results for ', year, ': ', results);
+        ErgastCalls.getRaceSchedule($scope.year).then(function(results) {
+          $log.debug('race schedule results for ', $scope.year, ': ', results);
         });
 
         //ergastCalls.getRaceResults(vm.year, vm.race).then(function(results) {
@@ -288,7 +283,7 @@ function($scope,samples){
 ;(function() {
 "use strict";
 
-angular.module("myPick10").run(["$templateCache", function($templateCache) {$templateCache.put("raceResults/raceResults.ng.template.html","<div>\n  <b>Race Results for</b>\n  <!--<form>-->\n    <!--Year1:<input type=\"number\" ng-model=\"rr.year\" name=\"year\" min=\"1950\" max=\"2015\"/>-->\n    <!--Race1:<input type=\"number\" ng-model=\"rr.race\" name=\"race\" min=\"1\" max=\"20\"/>-->\n  <!--</form>-->\n</div>\n");
+angular.module("myPick10").run(["$templateCache", function($templateCache) {$templateCache.put("raceResults/raceResults.ng.template.html","<div>\n  <b>Race Results for {{year}}/Race {{race}}</b>\n  <form>\n    Year1:<input type=\"number\" ng-model=\"rr.year\" name=\"year\" min=\"1950\" max=\"2015\"/>\n    Race1:<input type=\"number\" ng-model=\"rr.race\" name=\"race\" min=\"1\" max=\"20\"/>\n  </form>\n</div>\n");
 $templateCache.put("components/sample/sample.ng.template.html","<div>\n    Try a number here: <input type=\"number\" name=\"input\" ng-model=\"sample\" ng-change=\"calculate()\"><br/>\n    After calling to the server, the value is now: <span>{{calculated}}</span>\n</div>\n");}]);
 }());
 

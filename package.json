@@ -26,6 +26,9 @@
     "swig": "^1.4.2"
   },
   "devDependencies": {
+    "eslint": "^1.10.3",
+    "eslint-config-angular": "^0.4.0",
+    "eslint-plugin-angular": "^0.15.0",
     "gulp": "^3.9.0",
     "gulp-angular-templatecache": "^1.8.0",
     "gulp-batch": "^1.0.5",
