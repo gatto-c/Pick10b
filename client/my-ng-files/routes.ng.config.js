@@ -1,3 +1,4 @@
+/* eslint-disable */
 angular
 
 .module("myPick10")
@@ -12,3 +13,4 @@ function($routeProvider) {
     redirectTo: '/home'
   });
 }]);
+/* eslint-enable */

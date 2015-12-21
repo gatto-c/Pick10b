@@ -1,8 +1,14 @@
-angular
+(function() {
+  'use strict';
 
-.module("myPick10")
+  angular
 
-.service('ErgastCalls', ['$log', 'MyHttp',
+  .module("myPick10")
+
+  .service('ergastCalls', ergastCalls);
+
+  // inject dependencies
+  ergastCalls.$inject = ['$log', 'MyHttp', 'ergastAPIAddress'];
 
   /**
    * wrapper for all ergast based calls to ergast api
@@ -10,8 +16,12 @@ angular
    * @param MyHttp
    * @returns {{}}
    */
-  function($log, MyHttp){
+  function ergastCalls($log, MyHttp, ergastAPIAddress){
     var ErgastCalls = {};
+
+    ErgastCalls.noCall = function() {
+      return "";
+    };
 
     ErgastCalls.getRaceSchedule = function(year) {
       var myPromise;
@@ -20,7 +30,7 @@ angular
 
       //api call format: http://ergast.com/api/f1/year
       myPromise = MyHttp
-        .path('http://ergast.com/api/f1')
+        .path(ergastAPIAddress)
         .path(year)
         .path('results.json?limit=500')
         .get()
@@ -44,7 +54,7 @@ angular
 
       //api call format: http://ergast.com/api/f1/year/race/results.json
       myPromise = MyHttp
-        .path('http://ergast.com/api/f1')
+        .path(ergastAPIAddress)
         .path(year)
         .path(race)
         .path('results.json?limit=30')
@@ -57,5 +67,6 @@ angular
     };
 
     return ErgastCalls;
-  }]);
+  }
 
+})();

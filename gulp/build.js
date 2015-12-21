@@ -5,6 +5,8 @@ var sass = require('gulp-sass');
 var concat = require('gulp-concat');
 var sourcemaps = require('gulp-sourcemaps');
 var templateCache = require('gulp-angular-templatecache');
+var eslint = require('gulp-eslint');
+var size = require('gulp-size');
 
 /**
  * ng-templates
@@ -75,9 +77,20 @@ gulp.task('sass', function () {
 });
 
 /**
+ * lint
+ * Runs eslint and reports errors/warnings in code base
+ */
+gulp.task('lint', function() {
+  return gulp.src('client/my-ng-files/**/*.js')
+    .pipe(eslint())
+    .pipe(eslint.format())
+    .pipe(size());
+});
+
+/**
  * build
  * Task composed of all tasks required to
  * consider the project built.
  * @Author: Nathan Tranquilla
  */
-gulp.task('build',['ng-templates','assemble-files','clean','sass']);
+gulp.task('build',['ng-templates','assemble-files','clean','sass', 'lint']);

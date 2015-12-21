@@ -9,6 +9,7 @@ angular
       , replace: true
       , scope: true
       , controller: 'raceResultsController'
+      , controllerAs: 'rr'
       , templateUrl: 'raceResults/raceResults.ng.template.html'
     };
   });

@@ -3,11 +3,16 @@
   "plugins": ["angular"],
   "env": {
     "browser": true,
-    "jasmine": true
+    "jasmine": false
   },
   "globals": {
     "angular": true,
     "module": true,
-    "inject": true
+    "inject": false
+  },
+  "rules": {
+    "angular/angularelement": 1,
+    "angular/window-service": 0,
+    "angular/no-service-method": 0
   }
 }
