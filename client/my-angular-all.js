@@ -15,26 +15,20 @@ angular.module("myPick10", [
 ;(function() {
 "use strict";
 
-angular
-
-.module("myPick10")
-
-.constant("_",window._);
+/* global moment:false */
+(function() {
+  angular
+  .module("myPick10")
+  .constant("ergastAPIAddress", "http://ergast.com/api/f1")
+  .constant("_", window._)
+  .constant("moment", moment);
+})();
 }());
 
 ;(function() {
 "use strict";
 
-angular
-
-.module("myPick10")
-
-.constant("moment",moment);
-}());
-
-;(function() {
-"use strict";
-
+/* eslint-disable */
 angular
 
 .module("myPick10")
@@ -49,87 +43,93 @@ function($routeProvider) {
     redirectTo: '/home'
   });
 }]);
+/* eslint-enable */
 }());
 
 ;(function() {
 "use strict";
 
-angular
+'use strict';
 
-.module("myPick10")
+(function() {
+  angular
 
-.factory('MyHttp',
+    .module('myPick10')
 
-['$log','$http','_',
+    .factory("MyHttp", MyHttp);
 
-function ($log, $http, _) {
+  MyHttp.$inject = ['$log','$http', '_'];
 
-  var HttpRequest = function(arg) {
+  function MyHttp($log, $http, _) {
 
-    var isArgDefined = !_.isUndefined(arg)
+    var HttpRequest = function(arg) {
+      $log.debug(_);
 
-    if(isArgDefined && _.isString(arg)) {
-      angular.extend(this, {chunks: [arg], isHttpRequest: true });
-    }
-    else if(isArgDefined && _.isObject(arg) && arg.isHttpRequest ) {
-      angular.extend(this, {chunks: _.cloneDeep(arg.chunks), isHttpRequest: true });
-    }
-    else {
-      angular.extend(this, {chunks: [], isHttpRequest: true });
-    }
+      var isArgDefined = !_.isUndefined(arg);
 
-  };
+      if(isArgDefined && _.isString(arg)) {
+        angular.extend(this, {chunks: [arg], isHttpRequest: true });
+      }
+      else if(isArgDefined && _.isObject(arg) && arg.isHttpRequest ) {
+        angular.extend(this, {chunks: _.cloneDeep(arg.chunks), isHttpRequest: true });
+      }
+      else {
+        angular.extend(this, {chunks: [], isHttpRequest: true });
+      }
+    };
 
-  HttpRequest.path = function(chunk) {
-    return new HttpRequest(chunk)
-  };
+    HttpRequest.path = function(chunk) {
+      return new HttpRequest(chunk)
+    };
 
-  HttpRequest.prototype.path = function(chunk) {
-    this.chunks.push(chunk);
-    return this ;
-  };
+    HttpRequest.prototype.path = function(chunk) {
+      this.chunks.push(chunk);
+      return this ;
+    };
 
-  HttpRequest.prototype.getUrl = function() {
-    return this.chunks.join('/')
-  };
+    HttpRequest.prototype.getUrl = function() {
+      return this.chunks.join('/')
+    };
 
-  HttpRequest.prototype.put = function(objectToPut) {
-    var url = this.getUrl();
-    return $http.put(url, objectToPut).
-      then(function(response){
-        return response.data
-      }) ;
-  };
+    HttpRequest.prototype.put = function(objectToPut) {
+      var url = this.getUrl();
+      return $http.put(url, objectToPut).
+        then(function(response){
+          return response.data
+        }) ;
+    };
 
 
-  HttpRequest.prototype.post = function(objectToPost) {
-    var url = this.getUrl();
-    $log.info('Posting: ' + url);
-    return $http.post(url, objectToPost).
-      then(function(response){
-        return response.data
-      }) ;
-  };
+    HttpRequest.prototype.post = function(objectToPost) {
+      var url = this.getUrl();
+      $log.info('Posting: ' + url);
+      return $http.post(url, objectToPost).
+        then(function(response){
+          return response.data
+        }) ;
+    };
 
-  HttpRequest.prototype.get = function() {
-    var url = this.getUrl();
+    HttpRequest.prototype.get = function() {
+      var url = this.getUrl();
 
-    $log.info('Getting: ' + url);
+      $log.info('Getting: ' + url);
 
-    return $http.get(url).
-      then(function(response){
-        return response.data
-      }) ;
-  };
+      return $http.get(url).
+        then(function(response){
+          $log.debug('>>>>>response: ', response.data);
+          return response.data
+        }) ;
+    };
 
-  return HttpRequest;
-
-}]);
+    return HttpRequest;
+  }
+})();
 }());
 
 ;(function() {
 "use strict";
 
+/* eslint-disable angular/di */
 angular
 
 .module("myPick10")
@@ -160,16 +160,23 @@ function($log, MyHttp) {
 
   return SampleProxy;
 }]);
+/* eslint-enable angular/di */
 }());
 
 ;(function() {
 "use strict";
 
-angular
+(function() {
+  'use strict';
 
-.module("myPick10")
+  angular
 
-.service('ErgastCalls', ['$log', 'MyHttp',
+  .module("myPick10")
+
+  .service('ergastCalls', ergastCalls);
+
+  // inject dependencies
+  ergastCalls.$inject = ['$log', 'MyHttp', 'ergastAPIAddress'];
 
   /**
    * wrapper for all ergast based calls to ergast api
@@ -177,8 +184,12 @@ angular
    * @param MyHttp
    * @returns {{}}
    */
-  function($log, MyHttp){
+  function ergastCalls($log, MyHttp, ergastAPIAddress){
     var ErgastCalls = {};
+
+    ErgastCalls.noCall = function() {
+      return "";
+    };
 
     ErgastCalls.getRaceSchedule = function(year) {
       var myPromise;
@@ -187,7 +198,7 @@ angular
 
       //api call format: http://ergast.com/api/f1/year
       myPromise = MyHttp
-        .path('http://ergast.com/api/f1')
+        .path(ergastAPIAddress)
         .path(year)
         .path('results.json?limit=500')
         .get()
@@ -211,7 +222,7 @@ angular
 
       //api call format: http://ergast.com/api/f1/year/race/results.json
       myPromise = MyHttp
-        .path('http://ergast.com/api/f1')
+        .path(ergastAPIAddress)
         .path(year)
         .path(race)
         .path('results.json?limit=30')
@@ -224,43 +235,48 @@ angular
     };
 
     return ErgastCalls;
-  }]);
+  }
+
+})();
 }());
 
 ;(function() {
 "use strict";
 
-angular
+(function() {
+  'use strict';
 
-.module("myPick10")
+  angular
 
-.controller('raceResultsController',
+    .module("myPick10")
 
-['$scope', 'SampleProxy', '$log','MyHttp', 'ErgastCalls',
+    .controller('raceResultsController', raceResultsController);
 
-function($scope, samples, $log, MyHttp, ErgastCalls){
+  raceResultsController.$inject = ['$log','MyHttp', 'ergastCalls'];
 
-    $scope.year = 2015;
-    $scope.race = 16;
+  function raceResultsController($log, MyHttp, ergastCalls) {
+    var vm = this;
+    vm.year = 2015;
+    vm.race = 16;
 
-    getRaceResults();
+    ergastCalls.noCall();
 
-    function getRaceResults() {
-        ErgastCalls.getRaceSchedule($scope.year).then(function(results) {
-          $log.debug('race schedule results for ', $scope.year, ': ', results);
-        });
+    //ergastCalls.getRaceSchedule(vm.year).then(function(results) {
+    //  $log.debug('race schedule results for ', vm.year, ': ', results);
+    //});
 
-        //ergastCalls.getRaceResults(vm.year, vm.race).then(function(results) {
-        //  $log.debug('race results for ', vm.year, '/', vm.race, ': ', results);
-        //});
+    //ergastCalls.getRaceResults(vm.year, vm.race).then(function(results) {
+    //  $log.debug('race results for ', vm.year, '/', vm.race, ': ', results);
+    //});
 
-    }
-}]);
+  }
+})();
 }());
 
 ;(function() {
 "use strict";
 
+/* eslint-disable */
 angular
 
 .module("myPick10")
@@ -278,12 +294,13 @@ function($scope,samples){
       });
   }
 }]);
+/* eslint-enable */
 }());
 
 ;(function() {
 "use strict";
 
-angular.module("myPick10").run(["$templateCache", function($templateCache) {$templateCache.put("raceResults/raceResults.ng.template.html","<div>\n  <b>Race Results for {{year}}/Race {{race}}</b>\n  <form>\n    Year1:<input type=\"number\" ng-model=\"rr.year\" name=\"year\" min=\"1950\" max=\"2015\"/>\n    Race1:<input type=\"number\" ng-model=\"rr.race\" name=\"race\" min=\"1\" max=\"20\"/>\n  </form>\n</div>\n");
+angular.module("myPick10").run(["$templateCache", function($templateCache) {$templateCache.put("raceResults/raceResults.ng.template.html","<div>\n  <b>Race Results for {{rr.year}}/Race {{rr.race}}</b>\n  <form>\n    Year1:<input type=\"number\" ng-model=\"rr.year\" name=\"year\" min=\"1950\" max=\"2015\"/>\n    Race1:<input type=\"number\" ng-model=\"rr.race\" name=\"race\" min=\"1\" max=\"20\"/>\n  </form>\n</div>\n");
 $templateCache.put("components/sample/sample.ng.template.html","<div>\n    Try a number here: <input type=\"number\" name=\"input\" ng-model=\"sample\" ng-change=\"calculate()\"><br/>\n    After calling to the server, the value is now: <span>{{calculated}}</span>\n</div>\n");}]);
 }());
 
@@ -301,6 +318,7 @@ angular
       , replace: true
       , scope: true
       , controller: 'raceResultsController'
+      , controllerAs: 'rr'
       , templateUrl: 'raceResults/raceResults.ng.template.html'
     };
   });

@@ -1,26 +1,28 @@
-angular
+(function() {
+  'use strict';
 
-.module("myPick10")
+  angular
 
-.controller('raceResultsController',
+    .module("myPick10")
 
-['$scope', 'SampleProxy', '$log','MyHttp', 'ErgastCalls',
+    .controller('raceResultsController', raceResultsController);
 
-function($scope, samples, $log, MyHttp, ErgastCalls){
+  raceResultsController.$inject = ['$log','MyHttp', 'ergastCalls'];
 
-    $scope.year = 2015;
-    $scope.race = 16;
+  function raceResultsController($log, MyHttp, ergastCalls) {
+    var vm = this;
+    vm.year = 2015;
+    vm.race = 16;
 
-    getRaceResults();
+    ergastCalls.noCall();
 
-    function getRaceResults() {
-        ErgastCalls.getRaceSchedule($scope.year).then(function(results) {
-          $log.debug('race schedule results for ', $scope.year, ': ', results);
-        });
+    //ergastCalls.getRaceSchedule(vm.year).then(function(results) {
+    //  $log.debug('race schedule results for ', vm.year, ': ', results);
+    //});
 
-        //ergastCalls.getRaceResults(vm.year, vm.race).then(function(results) {
-        //  $log.debug('race results for ', vm.year, '/', vm.race, ': ', results);
-        //});
+    //ergastCalls.getRaceResults(vm.year, vm.race).then(function(results) {
+    //  $log.debug('race results for ', vm.year, '/', vm.race, ': ', results);
+    //});
 
-    }
-}]);
+  }
+})();

@@ -5,6 +5,11 @@ var sass = require('gulp-sass');
 var concat = require('gulp-concat');
 var sourcemaps = require('gulp-sourcemaps');
 var templateCache = require('gulp-angular-templatecache');
+var eslint = require('gulp-eslint');
+var size = require('gulp-size');
+var conf = require('./conf');
+var path = require('path');
+var util = require('util');
 
 /**
  * ng-templates
@@ -75,9 +80,50 @@ gulp.task('sass', function () {
 });
 
 /**
+ * lint
+ * Runs eslint and reports errors/warnings in code base
+ */
+gulp.task('lint', function() {
+  return gulp.src('client/my-ng-files/**/*.js')
+    .pipe(eslint())
+    .pipe(eslint.format())
+    .pipe(size());
+});
+
+function browserSyncInit(baseDir, browser) {
+  browser = browser === undefined ? 'default' : browser;
+
+  var routes = null;
+  if(baseDir === conf.paths.src || (util.isArray(baseDir) && baseDir.indexOf(conf.paths.src) !== -1)) {
+    routes = {
+      '/bower_components': 'bower_components'
+    };
+  }
+
+  var server = {
+    baseDir: baseDir,
+    routes: routes
+  };
+
+  console.log('>>>>>server: ', server, ', browser: ', browser);
+
+  var browserSync = require('browser-sync').create();
+
+  browserSync.instance = browserSync.init({
+    startPath: '/http-server-cluster.js',
+    server: './client',
+    browser: browser
+  });
+}
+
+//gulp.task('serve', function() {
+//  browserSyncInit([path.join(conf.paths.tmp, ''), conf.paths.src]);
+//});
+
+/**
  * build
  * Task composed of all tasks required to
  * consider the project built.
  * @Author: Nathan Tranquilla
  */
-gulp.task('build',['ng-templates','assemble-files','clean','sass']);
+gulp.task('build',['ng-templates','assemble-files','clean','sass', 'lint']);

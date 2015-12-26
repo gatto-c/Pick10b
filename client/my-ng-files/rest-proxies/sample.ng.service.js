@@ -1,3 +1,4 @@
+/* eslint-disable angular/di */
 angular
 
 .module("myPick10")
@@ -28,3 +29,4 @@ function($log, MyHttp) {
 
   return SampleProxy;
 }]);
+/* eslint-enable angular/di */
