@@ -19,6 +19,7 @@ module.exports.startServer = function(config) {
         koaRender = require('koa-render'),
         bodyParser = require('koa-bodyparser'),
         session = require('koa-generic-session'),
+        mongoStore = require('koa-generic-session-mongo'),
         mongo = require('koa-mongo'),
         passport = require('koa-passport');
 
@@ -38,6 +39,7 @@ module.exports.startServer = function(config) {
     app.keys = ['6AD7BC9C-F6B5-4384-A892-43D3BE57D89F'];
     app.use(session({
         //store: new MysqlStore(config.db),
+        store: new mongoStore({url:'mongodb://localhost/Pick6' }),
         rolling: true,
         cookie: {maxage: FIFTEEN_MINUTES}
     }));
@@ -70,6 +72,14 @@ module.exports.startServer = function(config) {
     // body parser
     /////////////////////////////////////////////////////////
     app.use(bodyParser());
+
+    /////////////////////////////////////////////////////////
+    // authentication
+    /////////////////////////////////////////////////////////
+    require('./auth');
+    app.use(passport.initialize());
+    app.use(passport.session());
+
 
     /////////////////////////////////////////////////////////
     // Anonymous routes
