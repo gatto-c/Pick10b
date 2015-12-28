@@ -105,8 +105,6 @@ function browserSyncInit(baseDir, browser) {
     routes: routes
   };
 
-  console.log('>>>>>server: ', server, ', browser: ', browser);
-
   var browserSync = require('browser-sync').create();
 
   browserSync.instance = browserSync.init({
@@ -116,9 +114,9 @@ function browserSyncInit(baseDir, browser) {
   });
 }
 
-//gulp.task('serve', function() {
-//  browserSyncInit([path.join(conf.paths.tmp, ''), conf.paths.src]);
-//});
+gulp.task('serve', function() {
+  browserSyncInit([path.join(conf.paths.tmp, ''), conf.paths.src]);
+});
 
 /**
  * build

@@ -10,9 +10,17 @@ module.exports.anonymousRouteMiddleware = function(passport) {
     pages = require('route-handlers/anonymous/pages');
 
   routes.get('/', function*() {
+    console.log('>>>>>here 222');
     this.redirect('/application#/home-page');
   });
+
   routes.get('/application', pages.applicationPage);
+
+  routes.get('/test', function*() {
+    console.log('>>>>>here 333');
+    this.body = '<b>test</b>';
+  });
+
 
   return routes.middleware();
 };

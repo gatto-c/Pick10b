@@ -12,7 +12,7 @@ const getIdentity = function(){
 };
 
 module.exports.startServer = function(config) {
-    
+
     // lib
     const
         koa = require('koa'),
@@ -21,12 +21,12 @@ module.exports.startServer = function(config) {
         session = require('koa-generic-session'),
         mongo = require('koa-mongo'),
         passport = require('koa-passport');
-    
+
     // integration
     const
         serveStaticContent = require('middleware/my-koa-static-folder'),
         routes = require('routes/routes');
-    
+
     // init
     const
         app = koa(),
@@ -76,6 +76,7 @@ module.exports.startServer = function(config) {
     /////////////////////////////////////////////////////////
     // static files
     app.use(serveStaticContent(__dirname, './client'));
+
     // anonymous API calls
     app.use(routes.anonymousRouteMiddleware(passport));
 
