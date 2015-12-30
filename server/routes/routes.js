@@ -3,7 +3,6 @@
 const
     Router = require('koa-router');
 
-
 module.exports.anonymousRouteMiddleware = function(passport) {
   const
     routes = new Router(),

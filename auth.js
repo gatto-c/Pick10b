@@ -1,8 +1,9 @@
-var passport = require('koa-passport');
-var mongoose = require('mongoose');
-var Player = require('./server/models/player');
+const passport = require('koa-passport')
+    ,mongoose = require('mongoose')
+    ,Player = require('./server/models/player')
+    ,logger = require('./logger');
 
-var user = { id: 1, username: 'test' };
+var user = { id: 1, username: 'user1' };
 
 passport.serializeUser(function(user, done) {
   done(null, user.id)
@@ -14,42 +15,31 @@ passport.deserializeUser(function(id, done) {
 
 var LocalStrategy = require('passport-local').Strategy;
 passport.use(new LocalStrategy(function(username, password, done) {
-  console.log('>>>>>username: ', username);
-
-  //Player.findOne(Player.findOne({ 'username' :  username }, function(err, player) {
-  //  console.log('>>>>>player: ', player);
-  //}));
-
   // check in mongo if a user with username exists or not
   Player.findOne({ 'username' :  username },
-    function(err, user) {
+    function(err, player) {
       // In case of any error, return using the done method
-      if (err)
-        return done(err);
+      if (err)  return done(err);
+
+      logger.log('debug', 'checking user:', username, ', password:', password);
+
       // Username does not exist, log error & redirect back
-      if (!user){
-
+      if (!player){
         return done(null, false,
-          console.log('User Not Found with username ', username));
+          logger.log('warn', 'User Not Found with username', username));
       }
+
       // User exists but wrong password, log the error
-      if (!isValidPassword(user, password)){
-
+      if (!player.validPassword(password)){
         return done(null, false,
-          console.log('Invalid Password'));
+          logger.log('warn', 'Invalid Password'));
       }
+
       // User and password both match, return user from
       // done method which will be treated like success
-      return done(null, user);
+      return done(null, player);
     }
   );
-
-
-  if (username === 'test' && password === 'test') {
-    done(null, user)
-  } else {
-    done(null, false)
-  }
 }));
 
 //var FacebookStrategy = require('passport-facebook').Strategy;

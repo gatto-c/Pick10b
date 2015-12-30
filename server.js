@@ -71,24 +71,32 @@ module.exports.startServer = function(config) {
     //    log: false
     //}));
 
+
+    ////create new model
+    //var Player = require('./server/models/player');
+    //var player = new Player({username: "user1", password: "abc123", email: "test1@test.com"});
+    //player.password = player.generateHash(player.password);
+    //
+    //logger.log('debug', 'password: ', player.password);
+    //logger.log('debug', 'password valid: ', player.validPassword('abc123'));
+    //
+    //
+    ////save model to MongoDB
+    //player.save(function (err) {
+    //  if (err) {
+    //    return err;
+    //  }
+    //  else {
+    //    logger.log('info', 'Player saved: ', player.username);
+    //  }
+    //});
+
     /////////////////////////////////////////////////////////
     // body parser
     /////////////////////////////////////////////////////////
     app.use(bodyParser());
 
-  logger.log('debug', 'Hello distributed log files!');
-  logger.log('info', 'Hello distributed log files!');
-  logger.log('warn', 'Hello distributed log files!');
-  logger.log('error', 'Hello distributed log files!');
-  //
-  //logger.level = 'debug';
-  //logger.log('debug', 'Now my debug messages are written to console!');
-
-  //logger.log('warn', 'WARNING - some stuff is happening');
-  //logger.log('error', 'ERROR - some bad stuff is happening');
-
-
-  /////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////
     // authentication
     /////////////////////////////////////////////////////////
     require('./auth');
