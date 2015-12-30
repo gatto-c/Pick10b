@@ -1,4 +1,6 @@
 var passport = require('koa-passport');
+var mongoose = require('mongoose');
+var Player = require('./server/models/player');
 
 var user = { id: 1, username: 'test' };
 
@@ -12,7 +14,37 @@ passport.deserializeUser(function(id, done) {
 
 var LocalStrategy = require('passport-local').Strategy;
 passport.use(new LocalStrategy(function(username, password, done) {
-  // retrieve user ...
+  console.log('>>>>>username: ', username);
+
+  //Player.findOne(Player.findOne({ 'username' :  username }, function(err, player) {
+  //  console.log('>>>>>player: ', player);
+  //}));
+
+  // check in mongo if a user with username exists or not
+  Player.findOne({ 'username' :  username },
+    function(err, user) {
+      // In case of any error, return using the done method
+      if (err)
+        return done(err);
+      // Username does not exist, log error & redirect back
+      if (!user){
+
+        return done(null, false,
+          console.log('User Not Found with username ', username));
+      }
+      // User exists but wrong password, log the error
+      if (!isValidPassword(user, password)){
+
+        return done(null, false,
+          console.log('Invalid Password'));
+      }
+      // User and password both match, return user from
+      // done method which will be treated like success
+      return done(null, user);
+    }
+  );
+
+
   if (username === 'test' && password === 'test') {
     done(null, user)
   } else {
