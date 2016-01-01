@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
 var bcrypt   = require('bcrypt');
+var Schema = mongoose.Schema;
 
 var PlayerSchema = new Schema({
   username: {type: String, required: true, trim: true},
