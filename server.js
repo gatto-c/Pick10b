@@ -72,7 +72,7 @@ module.exports.startServer = function(config) {
     //}));
 
 
-    ////create new model
+    ////create new model for test
     //var Player = require('./server/models/player');
     //var player = new Player({username: "user1", password: "abc123", email: "test1@test.com"});
     //player.password = player.generateHash(player.password);
