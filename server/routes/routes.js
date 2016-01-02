@@ -8,20 +8,21 @@ module.exports.anonymousRouteMiddleware = function(passport) {
     routes = new Router(),
     pages = require('route-handlers/anonymous/pages');
 
-  routes.get('/', pages.loginPage);
+  routes.get('/', pages.applicationPage);
+  //routes.get('/', pages.loginPage);
 
-  routes.post('/login',
-    passport.authenticate('local', {
-      successRedirect: '/application#/home-page',
-      failureRedirect: '/fail'
-    })
-  );
+  //routes.post('/login',
+  //  passport.authenticate('local', {
+  //    successRedirect: '/application#/home-stuff',
+  //    failureRedirect: '/fail'
+  //  })
+  //);
+  //
+  //routes.get('/logout', pages.loginPage);
 
-  routes.get('/logout', pages.loginPage);
-
-  routes.get('/appMainPage', function*() {
-    this.redirect('/application#/home-page');
-  });
+  //routes.get('/appMainPage', function*() {
+  //  this.redirect('/application#/home');
+  //});
 
   routes.get('/application', pages.applicationPage);
 
