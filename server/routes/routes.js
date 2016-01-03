@@ -1,7 +1,8 @@
 "use strict";
 
 const
-    Router = require('koa-router');
+    Router = require('koa-router'),
+    logger = require('../../logger');
 
 module.exports.anonymousRouteMiddleware = function(passport) {
   const
@@ -13,8 +14,8 @@ module.exports.anonymousRouteMiddleware = function(passport) {
 
   //routes.post('/login',
   //  passport.authenticate('local', {
-  //    successRedirect: '/application#/home-stuff',
-  //    failureRedirect: '/fail'
+  //    successRedirect: '/',
+  //    failureRedirect: '/login?error=local'
   //  })
   //);
   //
@@ -26,8 +27,29 @@ module.exports.anonymousRouteMiddleware = function(passport) {
 
   routes.get('/application', pages.applicationPage);
 
+  routes.post('/login', function*(next) {
+    var ctx = this;
+    yield passport.authenticate('local', function*(err, user, info) {
+      if (err) throw err;
+      if (user === false) {
+        ctx.status = 401;
+        ctx.body = { success: false }
+      } else {
+        yield ctx.login(user);
+        ctx.body = { success: true }
+      }
+    }).call(this, next)
+  });
+
+  routes.get('/logout', function*(next) {
+    this.logout();
+    this.redirect('/');
+  });
+
   return routes.middleware();
 };
+
+
 
 module.exports.microserviceRouteMiddleware = function() {
     const securedRest = new Router();

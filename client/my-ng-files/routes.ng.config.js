@@ -1,7 +1,7 @@
 /* eslint-disable */
 angular
 
-  //http://mherman.org/blog/2015/07/02/handling-user-authentication-with-the-mean-stack/#.VocdH3UrJ7g
+ //http://mherman.org/blog/2015/07/02/handling-user-authentication-with-the-mean-stack/#.VocdH3UrJ7g
 
 .module("myPick10")
 
@@ -12,23 +12,28 @@ function($routeProvider) {
   .when('/', {
       templateUrl: '/client/my-ng-files/welcome/welcome.ng.template.html',
       controller: 'WelcomeController',
-      controllerAs: 'ctrl'
+      controllerAs: 'vm',
+      access: {restricted: true}
   })
   .when('/login', {
     templateUrl: '/client/my-ng-files/welcome/login.ng.template.html',
-    controller: 'loginController',
-    controllerAs: 'ctrl'
+    controller: 'LoginController',
+    controllerAs: 'vm',
+    access: {restricted: false}
   })
   .when('/logout', {
-      controller: 'logoutController'
+      controller: 'LogoutController',
+      controllerAs: 'vm',
+      access: {restricted: true}
   })
   .when('/register', {
       templateUrl: '/client/my-ng-files/welcome/register.ng.template.html',
       controller: 'registerController',
-      controllerAs: 'ctrl'
+      controllerAs: 'vm',
+      access: {restricted: true}
   })
   .otherwise({
-    redirectTo: '/'
+    redirectTo: '/login'
   });
 }]);
 /* eslint-enable */

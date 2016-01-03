@@ -48,7 +48,6 @@
         }) ;
     };
 
-
     HttpRequest.prototype.post = function(objectToPost) {
       var url = this.getUrl();
       $log.info('Posting: ' + url);
@@ -65,7 +64,7 @@
 
       return $http.get(url).
         then(function(response){
-          $log.debug('>>>>>response: ', response.data);
+          $log.debug('response: ', response.data);
           return response.data
         }) ;
     };
