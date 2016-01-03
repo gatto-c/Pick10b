@@ -98,13 +98,13 @@
         // send a get request to the server
         $http.get('/logout')
           // handle success
-          .success(function (data) {
+          .success(function() {
             $log.info('Successfully logged out');
             user = false;
             deferred.resolve();
           })
           // handle error
-          .error(function (data) {
+          .error(function(data) {
             $log.error('Logout error: ', data);
             user = false;
             deferred.reject();

@@ -18,15 +18,23 @@ angular
     function($rootScope, $log, $location, $route, AuthService) {
       $log.debug('Running pre-code');
 
-      $rootScope.$on('$routeChangeStart', function (event, next, current) {
+      // listen for route changes and determine if authorization needs to be provided
+      /*eslint-disable no-unused-vars*/
+      var onRouteChangeStartBroadcast = $rootScope.$on('$routeChangeStart', function (event, next, current) {
         $log.debug('User logged in: ', AuthService.isLoggedIn());
 
         if (next.access.restricted && AuthService.isLoggedIn() === false) {
-          $log.debug('route-check - user NOT logged in: redirecting to login ui');
+          $log.debug('Auth route check - access not granted: ', {'restricted': next.access.restricted, 'user logged in': AuthService.isLoggedIn()});
           $location.path('/login');
         } else {
-          $log.debug('route-check - access granted: ', {'restricted': next.access.restricted, 'user logged in': AuthService.isLoggedIn()});
+          $log.debug('Auth route check - access granted: ', {'restricted': next.access.restricted, 'user logged in': AuthService.isLoggedIn()});
         }
+      });
+      /*eslint-enable no-unused-vars*/
+
+      //remove the broadcast subscription when scope is destroyed
+      $rootScope.$on('$destroy', function() {
+        onRouteChangeStartBroadcast();
       });
     }
   ]);
@@ -309,13 +317,13 @@ function($log, MyHttp) {
         // send a get request to the server
         $http.get('/logout')
           // handle success
-          .success(function (data) {
+          .success(function() {
             $log.info('Successfully logged out');
             user = false;
             deferred.resolve();
           })
           // handle error
-          .error(function (data) {
+          .error(function(data) {
             $log.error('Logout error: ', data);
             user = false;
             deferred.reject();
