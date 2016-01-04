@@ -50,7 +50,7 @@
 
     HttpRequest.prototype.post = function(objectToPost) {
       var url = this.getUrl();
-      $log.info('Posting: ' + url);
+      $log.info('Posting: ', url, ', object: ', objectToPost);
       return $http.post(url, objectToPost).
         then(function(response){
           return response.data

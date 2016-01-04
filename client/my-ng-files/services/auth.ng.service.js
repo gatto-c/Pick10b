@@ -8,9 +8,9 @@
     .service('AuthService', AuthService);
 
     // inject dependencies
-    AuthService.$inject = ['$q', '$timeout', '$http', '$log'];
+    AuthService.$inject = ['$q', '$timeout', '$http', '$log', 'MyHttp'];
 
-    function AuthService($q, $timeout, $http, $log) {
+    function AuthService($q, $timeout, $http, $log, MyHttp) {
 
       // create user variable
       var user = null;
@@ -33,35 +33,50 @@
         // create a new instance of deferred
         var deferred = $q.defer();
 
-        //MyHttp
-        //  .path('/user/login')
-        //  .path('username/' + username)
-        //  .path('password/' + password)
-        //  .post()
-        //  .catch(function () {
-        //    myPromise = null
-        //});
+        var myPromise = MyHttp
+          .path('/login')
+          .post({username: username, password: password})
+          .catch(function () {
+            myPromise = null
+        });
 
-        // send a post request to the server
-        $http.post('/login', {username: username, password: password})
-        // handle success
-        .success(function (data, status) {
-          if(status === 200 && data.success){
+        myPromise.then(function(data) {
+          $log.debug('AuthService: data: ', data);
+          if(data && data.success) {
             $log.debug('AuthService: user authenticated: data: ', data);
             user = true;
             deferred.resolve();
           } else {
-            $log.debug('AuthService: user NOT authenticated, data: ', data, ', status: ', status);
+            $log.debug('AuthService: user NOT authenticated, data: ', data);
             user = false;
             deferred.reject();
           }
-        })
-        // handle error
-        .error(function (data) {
-          $log.error('Login error: ', data);
-          user = false;
-          deferred.reject();
         });
+
+        // create a new instance of deferred
+        //var deferred = $q.defer();
+
+        //// send a post request to the server
+        //$http.post('/login', {username: username, password: password})
+        //// handle success
+        //.success(function (data, status) {
+        //  if(status === 200 && data.success){
+        //    $log.debug('AuthService: user authenticated: data: ', data);
+        //    user = true;
+        //    deferred.resolve();
+        //  } else {
+        //    $log.debug('AuthService: user NOT authenticated, data: ', data, ', status: ', status);
+        //    user = false;
+        //    deferred.reject();
+        //  }
+        //})
+        //// handle error
+        //.error(function (data) {
+        //  $log.error('Login error: ', data);
+        //  user = false;
+        //  deferred.reject();
+        //});
+        //
 
         // return promise object
         return deferred.promise;

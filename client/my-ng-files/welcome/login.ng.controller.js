@@ -29,12 +29,14 @@
         AuthService.login(vm.loginForm.username, vm.loginForm.password)
           // handle success
           .then(function () {
+            $log.debug('loginCtrl: user logged in');
             $location.path('/');
             vm.disabled = false;
             vm.loginForm = {};
           })
           // handle error
           .catch(function () {
+            $log.debug('loginCtrl: login error: Invalid username and/or password');
             vm.error = true;
             vm.errorMessage = "Invalid username and/or password";
             vm.disabled = false;
