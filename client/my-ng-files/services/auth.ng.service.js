@@ -36,9 +36,11 @@
         var myPromise = MyHttp
           .path('/login')
           .post({username: username, password: password})
-          .catch(function () {
+          .catch(function (err) {
+            $log.error(err.message);
             myPromise = null
-        });
+          }
+        );
 
         myPromise.then(function(data) {
           $log.debug('AuthService: data: ', data);
@@ -53,31 +55,6 @@
           }
         });
 
-        // create a new instance of deferred
-        //var deferred = $q.defer();
-
-        //// send a post request to the server
-        //$http.post('/login', {username: username, password: password})
-        //// handle success
-        //.success(function (data, status) {
-        //  if(status === 200 && data.success){
-        //    $log.debug('AuthService: user authenticated: data: ', data);
-        //    user = true;
-        //    deferred.resolve();
-        //  } else {
-        //    $log.debug('AuthService: user NOT authenticated, data: ', data, ', status: ', status);
-        //    user = false;
-        //    deferred.reject();
-        //  }
-        //})
-        //// handle error
-        //.error(function (data) {
-        //  $log.error('Login error: ', data);
-        //  user = false;
-        //  deferred.reject();
-        //});
-        //
-
         // return promise object
         return deferred.promise;
       }
@@ -87,7 +64,7 @@
         var deferred = $q.defer();
 
         // send a post request to the server
-        $http.post('/user/register', {username: username, password: password})
+        $http.post('/register', {username: username, password: password})
           // handle success
           .success(function (data, status) {
             if(status === 200 && data.status){
@@ -110,20 +87,26 @@
         // create a new instance of deferred
         var deferred = $q.defer();
 
-        // send a get request to the server
-        $http.get('/logout')
-          // handle success
-          .success(function() {
-            $log.info('Successfully logged out');
+        var myPromise = MyHttp
+          .path('/logout')
+          .get(false)
+          .catch(function () {
+            myPromise = null
+          }
+        );
+
+        myPromise.then(function(data) {
+          $log.debug('AuthService: data: ', data.status);
+          if(data && data.status == 200) {
+            $log.debug('Successfully logged out');
             user = false;
             deferred.resolve();
-          })
-          // handle error
-          .error(function(data) {
+          } else {
             $log.error('Logout error: ', data);
-            user = false;
+            user = true;
             deferred.reject();
-          });
+          }
+        });
 
         // return promise object
         return deferred.promise;

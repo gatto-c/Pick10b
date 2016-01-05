@@ -89,8 +89,16 @@ function($routeProvider) {
       templateUrl: '/client/my-ng-files/welcome/register.ng.template.html',
       controller: 'registerController',
       controllerAs: 'vm',
-      access: {restricted: true}
+      access: {restricted: false}
   })
+  .when('/one', {
+      template: '<h1>This is page one!</h1>',
+      access: {restricted: true}
+   })
+  .when('/two', {
+      template: '<h1>This is page two!</h1>',
+      access: {restricted: true}
+   })
   .otherwise({
     redirectTo: '/login'
   });
@@ -115,8 +123,6 @@ function($routeProvider) {
   function MyHttp($log, $http, _) {
 
     var HttpRequest = function(arg) {
-      $log.debug(_);
-
       var isArgDefined = !_.isUndefined(arg);
 
       if(isArgDefined && _.isString(arg)) {
@@ -153,22 +159,30 @@ function($routeProvider) {
 
     HttpRequest.prototype.post = function(objectToPost) {
       var url = this.getUrl();
-      $log.info('Posting: ', url, ', object: ', objectToPost);
       return $http.post(url, objectToPost).
         then(function(response){
           return response.data
         }) ;
     };
 
-    HttpRequest.prototype.get = function() {
+    /**
+     * perform http get operation
+     * @param dataOnly - will return only the data object of the response object if true
+     * @returns {*|{get}}
+     */
+    HttpRequest.prototype.get = function(dataOnly) {
+      dataOnly = dataOnly !== false; //defaults to
       var url = this.getUrl();
 
-      $log.info('Getting: ' + url);
+      //$log.debug('Getting: ', url, ', dataOnly: ', dataOnly);
 
       return $http.get(url).
         then(function(response){
-          $log.debug('response: ', response.data);
-          return response.data
+          if(dataOnly) {
+            return response.data;
+          } else {
+            return response;
+          }
         }) ;
     };
 
@@ -255,9 +269,11 @@ function($log, MyHttp) {
         var myPromise = MyHttp
           .path('/login')
           .post({username: username, password: password})
-          .catch(function () {
+          .catch(function (err) {
+            $log.error(err.message);
             myPromise = null
-        });
+          }
+        );
 
         myPromise.then(function(data) {
           $log.debug('AuthService: data: ', data);
@@ -272,31 +288,6 @@ function($log, MyHttp) {
           }
         });
 
-        // create a new instance of deferred
-        //var deferred = $q.defer();
-
-        //// send a post request to the server
-        //$http.post('/login', {username: username, password: password})
-        //// handle success
-        //.success(function (data, status) {
-        //  if(status === 200 && data.success){
-        //    $log.debug('AuthService: user authenticated: data: ', data);
-        //    user = true;
-        //    deferred.resolve();
-        //  } else {
-        //    $log.debug('AuthService: user NOT authenticated, data: ', data, ', status: ', status);
-        //    user = false;
-        //    deferred.reject();
-        //  }
-        //})
-        //// handle error
-        //.error(function (data) {
-        //  $log.error('Login error: ', data);
-        //  user = false;
-        //  deferred.reject();
-        //});
-        //
-
         // return promise object
         return deferred.promise;
       }
@@ -306,7 +297,7 @@ function($log, MyHttp) {
         var deferred = $q.defer();
 
         // send a post request to the server
-        $http.post('/user/register', {username: username, password: password})
+        $http.post('/register', {username: username, password: password})
           // handle success
           .success(function (data, status) {
             if(status === 200 && data.status){
@@ -329,20 +320,26 @@ function($log, MyHttp) {
         // create a new instance of deferred
         var deferred = $q.defer();
 
-        // send a get request to the server
-        $http.get('/logout')
-          // handle success
-          .success(function() {
-            $log.info('Successfully logged out');
+        var myPromise = MyHttp
+          .path('/logout')
+          .get(false)
+          .catch(function () {
+            myPromise = null
+          }
+        );
+
+        myPromise.then(function(data) {
+          $log.debug('AuthService: data: ', data.status);
+          if(data && data.status == 200) {
+            $log.debug('Successfully logged out');
             user = false;
             deferred.resolve();
-          })
-          // handle error
-          .error(function(data) {
+          } else {
             $log.error('Logout error: ', data);
-            user = false;
+            user = true;
             deferred.reject();
-          });
+          }
+        });
 
         // return promise object
         return deferred.promise;
@@ -554,9 +551,47 @@ function($log, MyHttp) {
 ;(function() {
 "use strict";
 
-/**
- * Created by chris on 01/01/16.
- */
+(function() {
+  'use strict';
+
+  angular
+
+    .module('myPick10')
+
+    .controller('RegisterController', RegisterController);
+
+  //inject dependencies
+  RegisterController.$inject = ['$scope', '$location', '$log', 'AuthService', 'appTitle'];
+
+  function RegisterController($scope, $location, AuthService) {
+    var vm = this;
+    vm.title = appTitle;
+
+    $log.debug('Registration - current user status: ', AuthService.getUserStatus());
+
+    vm.register = function () {
+      // initial values
+      $scope.error = false;
+      $scope.disabled = true;
+
+      // call register from service
+      AuthService.register($scope.registerForm.username, $scope.registerForm.password)
+        // handle success
+        .then(function () {
+          $location.path('/login');
+          $scope.disabled = false;
+          $scope.registerForm = {};
+        })
+        // handle error
+        .catch(function () {
+          $scope.error = true;
+          $scope.errorMessage = "Something went wrong!";
+          $scope.disabled = false;
+          $scope.registerForm = {};
+        });
+    };
+  }
+})();
 }());
 
 ;(function() {
@@ -632,7 +667,7 @@ function($scope,samples){
 
 angular.module("myPick10").run(["$templateCache", function($templateCache) {$templateCache.put("raceResults/raceResults.ng.template.html","<div>\n  <b>Race Results for {{rr.year}}/Race {{rr.race}}</b>\n  <form>\n    Year1:<input type=\"number\" ng-model=\"rr.year\" name=\"year\" min=\"1950\" max=\"2015\"/>\n    Race1:<input type=\"number\" ng-model=\"rr.race\" name=\"race\" min=\"1\" max=\"20\"/>\n  </form>\n</div>\n");
 $templateCache.put("welcome/login.ng.template.html","<div class=\"col-md-6 col-md-offset-3\">\n  <h1>Welcome - {{ vm.title }}</h1>\n  <h2>Login</h2>\n  <form name=\"form\" ng-submit=\"vm.login()\" role=\"form\">\n    <div class=\"form-group\" ng-class=\"{ \'has-error\': form.username.$dirty && form.username.$error.required }\">\n      <label for=\"username\">Username</label>\n      <input type=\"text\" name=\"username\" id=\"username\" class=\"form-control\" ng-model=\"vm.loginForm.username\" required />\n      <span ng-show=\"form.username.$dirty && form.username.$error.required\" class=\"help-block\">Username is required</span>\n    </div>\n    <div class=\"form-group\" ng-class=\"{ \'has-error\': form.password.$dirty && form.password.$error.required }\">\n      <label for=\"password\">Password</label>\n      <input type=\"password\" name=\"password\" id=\"password\" class=\"form-control\" ng-model=\"vm.loginForm.password\" required />\n      <span ng-show=\"form.password.$dirty && form.password.$error.required\" class=\"help-block\">Password is required</span>\n    </div>\n    <div class=\"form-actions\">\n      <button type=\"submit\" ng-disabled=\"form.$invalid || ctrl.dataLoading\" class=\"btn btn-primary\">Login</button>\n      <img ng-if=\"ctrl.dataLoading\" src=\"data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAkKAAAALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==\" />\n      <a href=\"#/register\" class=\"btn btn-link\">Register</a>\n    </div>\n  </form>\n</div>\n");
-$templateCache.put("welcome/register.ng.template.html","<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title></title>\n</head>\n<body>\n\n</body>\n</html>\n");
+$templateCache.put("welcome/register.ng.template.html","<div class=\"col-md-4\">\n  <h1>Register</h2>\n    <div ng-show=\"error\" class=\"alert alert-danger\"></div>\n    <form class=\"form\" ng-submit=\"register()\">\n      <div class=\"form-group\">\n        <label>Username</label>\n        <input type=\"text\" class=\"form-control\" name=\"username\" ng-model=\"registerForm.username\" required>\n      </div>\n      <div class=\"form-group\">\n        <label>Password</label>\n        <input type=\"password\" class=\"form-control\" name=\"password\" ng-model=\"registerForm.password\" required>\n      </div>\n      <div>\n        <button type=\"submit\" class=\"btn btn-default\" ng-disabled=\"disabled\">Register</button>\n      </div>\n    </form>\n</div>\n");
 $templateCache.put("welcome/welcome.ng.template.html","<script src=\"../services/auth.ng.service.js\"></script>\n\n<div class=\"col-md-6 col-md-offset-3\">\n  <h1>Welcome - {{ vm.title }}</h1>\n\n  <div ng-controller=\"LogoutController as vm\">\n    <a ng-click=\'vm.logout()\' class=\"btn btn-default\">Logout</a>\n  </div>\n\n  <!--<h2>Login</h2>-->\n  <!--<form name=\"form\" ng-submit=\"vm.login()\" role=\"form\">-->\n    <!--<div class=\"form-group\" ng-class=\"{ \'has-error\': form.username.$dirty && form.username.$error.required }\">-->\n      <!--<label for=\"username\">Username</label>-->\n      <!--<input type=\"text\" name=\"username\" id=\"username\" class=\"form-control\" ng-model=\"vm.username\" required />-->\n      <!--<span ng-show=\"form.username.$dirty && form.username.$error.required\" class=\"help-block\">Username is required</span>-->\n    <!--</div>-->\n    <!--<div class=\"form-group\" ng-class=\"{ \'has-error\': form.password.$dirty && form.password.$error.required }\">-->\n      <!--<label for=\"password\">Password</label>-->\n      <!--<input type=\"password\" name=\"password\" id=\"password\" class=\"form-control\" ng-model=\"vm.password\" required />-->\n      <!--<span ng-show=\"form.password.$dirty && form.password.$error.required\" class=\"help-block\">Password is required</span>-->\n    <!--</div>-->\n    <!--<div class=\"form-actions\">-->\n      <!--<button type=\"submit\" ng-disabled=\"form.$invalid || vm.dataLoading\" class=\"btn btn-primary\">Login</button>-->\n      <!--<img ng-if=\"vm.dataLoading\" src=\"data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAkKAAAALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==\" />-->\n      <!--<a href=\"#/register\" class=\"btn btn-link\">Register</a>-->\n    <!--</div>-->\n  <!--</form>-->\n</div>\n");
 $templateCache.put("components/sample/sample.ng.template.html","<div>\n    Try a number here: <input type=\"number\" name=\"input\" ng-model=\"sample\" ng-change=\"calculate()\"><br/>\n    After calling to the server, the value is now: <span>{{calculated}}</span>\n</div>\n");}]);
 }());
