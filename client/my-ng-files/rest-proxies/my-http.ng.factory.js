@@ -12,8 +12,6 @@
   function MyHttp($log, $http, _) {
 
     var HttpRequest = function(arg) {
-      $log.debug(_);
-
       var isArgDefined = !_.isUndefined(arg);
 
       if(isArgDefined && _.isString(arg)) {
@@ -48,25 +46,32 @@
         }) ;
     };
 
-
     HttpRequest.prototype.post = function(objectToPost) {
       var url = this.getUrl();
-      $log.info('Posting: ' + url);
       return $http.post(url, objectToPost).
         then(function(response){
           return response.data
         }) ;
     };
 
-    HttpRequest.prototype.get = function() {
+    /**
+     * perform http get operation
+     * @param dataOnly - will return only the data object of the response object if true
+     * @returns {*|{get}}
+     */
+    HttpRequest.prototype.get = function(dataOnly) {
+      dataOnly = dataOnly !== false; //defaults to
       var url = this.getUrl();
 
-      $log.info('Getting: ' + url);
+      //$log.debug('Getting: ', url, ', dataOnly: ', dataOnly);
 
       return $http.get(url).
         then(function(response){
-          $log.debug('>>>>>response: ', response.data);
-          return response.data
+          if(dataOnly) {
+            return response.data;
+          } else {
+            return response;
+          }
         }) ;
     };
 

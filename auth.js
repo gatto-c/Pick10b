@@ -37,6 +37,7 @@ passport.use(new LocalStrategy(function(username, password, done) {
 
       // User and password both match, return user from
       // done method which will be treated like success
+      logger.debug('user authorized: ', username);
       return done(null, player);
     }
   );
