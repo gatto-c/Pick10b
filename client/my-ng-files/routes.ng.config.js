@@ -28,7 +28,7 @@ function($routeProvider) {
   })
   .when('/register', {
       templateUrl: '/client/my-ng-files/welcome/register.ng.template.html',
-      controller: 'registerController',
+      controller: 'RegisterController',
       controllerAs: 'vm',
       access: {restricted: false}
   })

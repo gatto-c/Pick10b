@@ -2,7 +2,8 @@
 
 const
     Router = require('koa-router'),
-    logger = require('../../logger');
+    logger = require('../../logger'),
+    Player = require('../models/player');
 
 module.exports.anonymousRouteMiddleware = function(passport) {
   const
@@ -42,14 +43,24 @@ module.exports.anonymousRouteMiddleware = function(passport) {
     }).call(this, next)
   });
 
-  routes.post('/register', function(req, res) {
-    User.register(new User({ username: req.body.username }), req.body.password, function(err, account) {
+  routes.post('/register', function*(next) {
+    //http://tastenjesus.de/koajs-first-application-using-kamn-stack-part-12/
+
+    var ctx = this;
+
+    //logger.debug('/register: ctx.body: ', ctx.request.body);
+    var player = new Player({username: ctx.request.body.username, password: ctx.request.body.password, email: ctx.request.body.username});
+    player.password = player.generateHash(player.password);
+    yield player.save(function (err) {
       if (err) {
-        return res.status(500).json({err: err});
+        ctx.status = 401;
+        ctx.body = { success: false }
       }
-      passport.authenticate('local')(req, res, function () {
-        return res.status(200).json({status: 'Registration successful!'});
-      });
+      else {
+        logger.debug('info', 'Player saved: ', player.username);
+        ctx.status = 200;
+        ctx.body = { success: true }
+      }
     });
   });
 

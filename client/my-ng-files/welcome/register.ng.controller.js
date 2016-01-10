@@ -10,31 +10,33 @@
   //inject dependencies
   RegisterController.$inject = ['$scope', '$location', '$log', 'AuthService', 'appTitle'];
 
-  function RegisterController($scope, $location, AuthService) {
+  function RegisterController($scope, $location, $log, AuthService, appTitle) {
     var vm = this;
     vm.title = appTitle;
 
     $log.debug('Registration - current user status: ', AuthService.getUserStatus());
 
     vm.register = function () {
+      $log.debug('Registering new player: vm: ', vm.registerForm.username);
+
       // initial values
-      $scope.error = false;
-      $scope.disabled = true;
+      vm.error = false;
+      vm.disabled = true;
 
       // call register from service
-      AuthService.register($scope.registerForm.username, $scope.registerForm.password)
+      AuthService.register(vm.registerForm.username, vm.registerForm.password)
         // handle success
         .then(function () {
           $location.path('/login');
-          $scope.disabled = false;
-          $scope.registerForm = {};
+          vm.disabled = false;
+          vm.registerForm = {};
         })
         // handle error
         .catch(function () {
-          $scope.error = true;
-          $scope.errorMessage = "Something went wrong!";
-          $scope.disabled = false;
-          $scope.registerForm = {};
+          vm.error = true;
+          vm.errorMessage = "Something went wrong!";
+          vm.disabled = false;
+          vm.registerForm = {};
         });
     };
   }
