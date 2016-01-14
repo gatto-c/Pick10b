@@ -96,9 +96,9 @@
         // send a post request to the server
         var myPromise = MyHttp
           .path('/register')
-          .post({username: username, password: password})
+          .post({username: username, password: password}, false)
           .catch(function (err) {
-            $log.error(err.message);
+            $log.error(err);
             myPromise = null
           }
         );

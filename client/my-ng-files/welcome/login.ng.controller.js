@@ -40,7 +40,6 @@
             vm.error = true;
             vm.errorMessage = "Invalid username and/or password";
             vm.disabled = false;
-            vm.loginForm = {};
           });
       };
     }

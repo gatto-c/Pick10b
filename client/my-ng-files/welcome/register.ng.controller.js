@@ -14,6 +14,10 @@
     var vm = this;
     vm.title = appTitle;
 
+    vm.registerForm = {};
+    vm.registerForm.username = 'user1';
+    vm.registerForm.password = 'abc123';
+
     $log.debug('Registration - current user status: ', AuthService.getUserStatus());
 
     vm.register = function () {

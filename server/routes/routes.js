@@ -11,23 +11,11 @@ module.exports.anonymousRouteMiddleware = function(passport) {
     pages = require('route-handlers/anonymous/pages');
 
   routes.get('/', pages.applicationPage);
-  //routes.get('/', pages.loginPage);
-
-  //routes.post('/login',
-  //  passport.authenticate('local', {
-  //    successRedirect: '/',
-  //    failureRedirect: '/login?error=local'
-  //  })
-  //);
-  //
-  //routes.get('/logout', pages.loginPage);
-
-  //routes.get('/appMainPage', function*() {
-  //  this.redirect('/application#/home');
-  //});
-
   routes.get('/application', pages.applicationPage);
 
+  /**
+   * handle login post
+   */
   routes.post('/login', function*(next) {
     var ctx = this;
     yield passport.authenticate('local', function*(err, user, info) {
@@ -43,27 +31,33 @@ module.exports.anonymousRouteMiddleware = function(passport) {
     }).call(this, next)
   });
 
+  /**
+   * handle registration post
+   */
   routes.post('/register', function*(next) {
     //http://tastenjesus.de/koajs-first-application-using-kamn-stack-part-12/
+    //https://github.com/dozoisch/koa-react-full-example/blob/master/
 
     var ctx = this;
 
-    //logger.debug('/register: ctx.body: ', ctx.request.body);
+    //create a new player mongoose model
     var player = new Player({username: ctx.request.body.username, password: ctx.request.body.password, email: ctx.request.body.username});
-    player.password = player.generateHash(player.password);
-    yield player.save(function (err) {
-      if (err) {
-        ctx.status = 401;
-        ctx.body = { success: false }
-      }
-      else {
-        logger.debug('info', 'Player saved: ', player.username);
-        ctx.status = 200;
-        ctx.body = { success: true }
-      }
-    });
+
+    //attempt to save new player
+    try {
+      yield player.save();
+      ctx.status = 200;
+      ctx.body = { success: true };
+    } catch (err) {
+      //if this is an error condition return relevant error to caller
+      ctx.status = (err.message == 'duplicate' ? 409 : 401); //409 represents a duplicate player, 401 a general error
+      ctx.body = { success: false };
+    }
   });
 
+  /**
+   * handle logout get
+   */
   routes.get('/logout', function*(next) {
     this.logout();
     this.redirect('/');
