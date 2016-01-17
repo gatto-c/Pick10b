@@ -57,16 +57,19 @@
 
       var url = this.getUrl();
       $log.debug('Post response0');
+
       return $http.post(url, objectToPost).
         then(function(response){
           if(dataOnly) {
-            $log.debug('Post response1: ', response);
             return response.data;
           } else {
-            $log.debug('Post response2: ', response);
             return response;
           }
-        }) ;
+        }, function(response) {
+          $log.debug('Post response error condition: ', response);
+          return response;
+        });
+
     };
 
     /**

@@ -15,8 +15,8 @@
     vm.title = appTitle;
 
     vm.registerForm = {};
-    vm.registerForm.username = 'user1';
-    vm.registerForm.password = 'abc123';
+    //vm.registerForm.username = 'user1';
+    //vm.registerForm.password = 'abc123';
 
     $log.debug('Registration - current user status: ', AuthService.getUserStatus());
 
@@ -31,14 +31,15 @@
       AuthService.register(vm.registerForm.username, vm.registerForm.password)
         // handle success
         .then(function () {
-          $location.path('/login');
+          $location.path('/registrationConfirmation/' + vm.registerForm.username); //$location.path('/login');
           vm.disabled = false;
           vm.registerForm = {};
         })
         // handle error
-        .catch(function () {
+        .catch(function (err) {
+          $log.debug('err: ', err);
           vm.error = true;
-          vm.errorMessage = "Something went wrong!";
+          vm.errorMessage = (err.status == 409) ? "Username " + vm.registerForm.username + " already exists. Please use another." : "We're sorry, we are unable to register you at this time. Please try again later.";
           vm.disabled = false;
           vm.registerForm = {};
         });
