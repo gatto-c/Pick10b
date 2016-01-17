@@ -46,12 +46,30 @@
         }) ;
     };
 
-    HttpRequest.prototype.post = function(objectToPost) {
+    /**
+     * perform http post operation
+     * @param objectToPost
+     * @param dataOnly - will return only the data object of the response object if true
+     * @returns {*|{get}}
+     */
+    HttpRequest.prototype.post = function(objectToPost, dataOnly) {
+      dataOnly = dataOnly !== false; //defaults to true
+
       var url = this.getUrl();
+      $log.debug('Post response0');
+
       return $http.post(url, objectToPost).
         then(function(response){
-          return response.data
-        }) ;
+          if(dataOnly) {
+            return response.data;
+          } else {
+            return response;
+          }
+        }, function(response) {
+          $log.debug('Post response error condition: ', response);
+          return response;
+        });
+
     };
 
     /**
@@ -60,11 +78,9 @@
      * @returns {*|{get}}
      */
     HttpRequest.prototype.get = function(dataOnly) {
-      dataOnly = dataOnly !== false; //defaults to
+      dataOnly = dataOnly !== false; //defaults to true
+
       var url = this.getUrl();
-
-      //$log.debug('Getting: ', url, ', dataOnly: ', dataOnly);
-
       return $http.get(url).
         then(function(response){
           if(dataOnly) {

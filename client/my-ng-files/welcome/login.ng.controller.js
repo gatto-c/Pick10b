@@ -8,12 +8,18 @@
     .controller('LoginController', LoginController);
 
     //inject dependencies
-    LoginController.$inject = ['$scope', '$location', '$log', 'AuthService', 'appTitle'];
+    LoginController.$inject = ['$scope', '$location', '$routeParams', '$log', 'AuthService', 'appTitle'];
 
-    function LoginController($scope, $location, $log, AuthService, appTitle) {
+    function LoginController($scope, $location, $routeParams, $log, AuthService, appTitle) {
       var vm = this;
       vm.title = appTitle;
-      vm.loginForm = {username: 'user1', password: 'abc123'};
+
+      if ($routeParams.username) {
+        vm.loginForm = {username: $routeParams.username};
+      } else {
+        vm.loginForm = {};
+      }
+      //vm.loginForm = {username: 'user1', password: 'abc123'};
 
       $log.log('debug', 'GetUserStatus: ', AuthService.getUserStatus());
 
@@ -40,7 +46,6 @@
             vm.error = true;
             vm.errorMessage = "Invalid username and/or password";
             vm.disabled = false;
-            vm.loginForm = {};
           });
       };
     }

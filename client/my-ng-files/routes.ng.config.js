@@ -15,7 +15,7 @@ function($routeProvider) {
       controllerAs: 'vm',
       access: {restricted: true}
   })
-  .when('/login', {
+  .when('/login/:username?', {
     templateUrl: '/client/my-ng-files/welcome/login.ng.template.html',
     controller: 'LoginController',
     controllerAs: 'vm',
@@ -32,6 +32,12 @@ function($routeProvider) {
       controllerAs: 'vm',
       access: {restricted: false}
   })
+  .when('/registrationConfirmation/:username', {
+      templateUrl: '/client/my-ng-files/welcome/registrationConfirmation.ng.template.html',
+      controller: 'RegistrationConfirmationController',
+      controllerAs: 'vm',
+      access: {restricted: false}
+    })
   .when('/one', {
       template: '<h1>This is page one!</h1>',
       access: {restricted: true}

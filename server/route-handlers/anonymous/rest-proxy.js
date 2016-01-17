@@ -12,8 +12,6 @@ const samples = require('data-access/samples-generator');
  * @param array args
  */
 function* resolveRequest(host, action, args) {
-  console.log('>>>>>here 111');
-
   var path = "/rest/" + action + "/";
   if(!host) {
       throw new Error("unknown service " + service);

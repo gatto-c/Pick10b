@@ -96,22 +96,24 @@
         // send a post request to the server
         var myPromise = MyHttp
           .path('/register')
-          .post({username: username, password: password})
+          .post({username: username, password: password}, false)
           .catch(function (err) {
-            $log.error(err.message);
+            $log.error(err);
             myPromise = null
           }
         );
 
-        myPromise.then(function(data) {
-          if(data && data.success) {
-            $log.debug('AuthService: user registered: data: ', data);
+        myPromise.then(function(response) {
+          $log.debug('registration response: ', response);
+
+          if(response && response.status == 200) {
+            $log.debug('AuthService: user registered: response: ', response);
             user = true;
             deferred.resolve();
           } else {
-            $log.debug('AuthService: user NOT registered, data: ', data);
+            $log.debug('AuthService: user NOT registered(1), response: ', response);
             user = false;
-            deferred.reject();
+            deferred.reject(response);
           }
         });
 

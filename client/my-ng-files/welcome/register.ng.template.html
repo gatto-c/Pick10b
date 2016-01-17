@@ -1,6 +1,6 @@
-<div class="col-md-4">
+<div class="col-md-6 col-md-offset-3">
   <h2>Register for {{vm.title}}</h2>
-    <div ng-show="error" class="alert alert-danger"></div>
+    <div ng-show="vm.error" class="alert alert-danger">{{vm.errorMessage}}</div>
     <form class="form" ng-submit="vm.register()">
       <div class="form-group">
         <label>Username</label>
