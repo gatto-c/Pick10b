@@ -1,8 +1,6 @@
 /* eslint-disable */
 angular
 
- //http://mherman.org/blog/2015/07/02/handling-user-authentication-with-the-mean-stack/#.VocdH3UrJ7g
-
 .module("myPick10")
 
 .config(['$routeProvider',
@@ -47,7 +45,7 @@ function($routeProvider) {
       access: {restricted: true}
    })
   .otherwise({
-    redirectTo: '/login'
+    redirectTo: '/'
   });
 }]);
 /* eslint-enable */

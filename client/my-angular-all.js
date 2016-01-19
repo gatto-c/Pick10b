@@ -26,6 +26,7 @@ angular
         if (next.access.restricted && AuthService.isLoggedIn() === false) {
           $log.debug('Auth route check - access not granted: ', {'restricted': next.access.restricted, 'user logged in': AuthService.isLoggedIn()});
           $location.path('/login');
+          $route.reload();
         } else {
           $log.debug('Auth route check - access granted: ', {'restricted': next.access.restricted, 'user logged in': AuthService.isLoggedIn()});
         }
@@ -34,6 +35,7 @@ angular
 
       //remove the broadcast subscription when scope is destroyed
       $rootScope.$on('$destroy', function() {
+        $log.debug('onRouteChangeStartBroadcast destroyed');
         onRouteChangeStartBroadcast();
       });
     }
@@ -59,8 +61,6 @@ angular
 
 /* eslint-disable */
 angular
-
- //http://mherman.org/blog/2015/07/02/handling-user-authentication-with-the-mean-stack/#.VocdH3UrJ7g
 
 .module("myPick10")
 
@@ -106,7 +106,7 @@ function($routeProvider) {
       access: {restricted: true}
    })
   .otherwise({
-    redirectTo: '/login'
+    redirectTo: '/'
   });
 }]);
 /* eslint-enable */
@@ -216,42 +216,9 @@ function($routeProvider) {
 ;(function() {
 "use strict";
 
-/* eslint-disable angular/di */
-angular
+//http://mherman.org/blog/2015/07/02/handling-user-authentication-with-the-mean-stack/#.VocdH3UrJ7g
+//https://thinkster.io/mean-stack-tutorial#adding-authentication-via-passport
 
-.module("myPick10")
-
-.service('SampleProxy',
-
-['$log', 'MyHttp',
-
-function($log, MyHttp) {
-  var SampleProxy = {};
-
-  var samplePromise;
-
-  SampleProxy.getSample = function(id) {
-    $log.info('SampleProxy.getSample');
-
-    samplePromise = MyHttp
-      .path('rest')
-      .path('samples')
-      .path(id)
-      .get()
-      .catch(function () {
-        samplePromise = null
-      });
-
-    return samplePromise;
-  };
-
-  return SampleProxy;
-}]);
-/* eslint-enable angular/di */
-}());
-
-;(function() {
-"use strict";
 
 (function() {
   'use strict';
@@ -270,13 +237,15 @@ function($log, MyHttp) {
      * @param $q - support promises
      * @param $log - used for console logging
      * @param MyHttp - proxy to rest calls
-     * @returns {{isLoggedIn: isLoggedIn, getUserStatus: getUserStatus, login: login, logout: logout, register: register}}
+     * @returns {{isLoggedIn: isLoggedIn, getUserStatus: getUserStatus, getUserData: getUserData, login: login, logout: logout, register: register}}
      * @constructor
      */
     function AuthService($q, $log, MyHttp) {
+      $log.debug('AuthService Initializing...');
+
       // create user variable
       var user = null;
-
+      var userName = null;
 
       /**
        * returns true if user evaluates to true - a user is logged in - otherwise it returns false
@@ -296,6 +265,10 @@ function($log, MyHttp) {
        */
       function getUserStatus() {
         return user;
+      }
+
+      function getUserData() {
+        return {username: userName};
       }
 
       /**
@@ -324,10 +297,12 @@ function($log, MyHttp) {
           if(data && data.success) {
             $log.debug('AuthService: user authenticated: data: ', data);
             user = true;
+            userName = username;
             deferred.resolve();
           } else {
             $log.debug('AuthService: user NOT authenticated, data: ', data);
             user = false;
+            userName = null;
             deferred.reject();
           }
         });
@@ -414,6 +389,7 @@ function($log, MyHttp) {
       return ({
         isLoggedIn: isLoggedIn,
         getUserStatus: getUserStatus,
+        getUserData: getUserData,
         login: login,
         logout: logout,
         register: register
@@ -500,6 +476,43 @@ function($log, MyHttp) {
 ;(function() {
 "use strict";
 
+/* eslint-disable angular/di */
+angular
+
+.module("myPick10")
+
+.service('SampleProxy',
+
+['$log', 'MyHttp',
+
+function($log, MyHttp) {
+  var SampleProxy = {};
+
+  var samplePromise;
+
+  SampleProxy.getSample = function(id) {
+    $log.info('SampleProxy.getSample');
+
+    samplePromise = MyHttp
+      .path('rest')
+      .path('samples')
+      .path(id)
+      .get()
+      .catch(function () {
+        samplePromise = null
+      });
+
+    return samplePromise;
+  };
+
+  return SampleProxy;
+}]);
+/* eslint-enable angular/di */
+}());
+
+;(function() {
+"use strict";
+
 (function() {
   'use strict';
 
@@ -556,7 +569,7 @@ function($log, MyHttp) {
       }
       //vm.loginForm = {username: 'user1', password: 'abc123'};
 
-      $log.log('debug', 'GetUserStatus: ', AuthService.getUserStatus());
+      $log.debug('Login Controller: getUserStatus: ', AuthService.getUserStatus());
 
 
       vm.login = function () {
@@ -740,6 +753,29 @@ function($log, MyHttp) {
 ;(function() {
 "use strict";
 
+(function() {
+  'use strict';
+
+  angular
+
+    .module("myPick10")
+
+    .controller('myHeaderController', myHeaderController);
+
+  myHeaderController.$inject = ['$log', 'appTitle', 'AuthService'];
+
+  function myHeaderController($log, appTitle, AuthService) {
+    var vm = this;
+    vm.appTitle = appTitle;
+    vm.loggedIn = AuthService.isLoggedIn();
+    vm.player = AuthService.getUserData();
+  }
+})();
+}());
+
+;(function() {
+"use strict";
+
 /* eslint-disable */
 angular
 
@@ -765,10 +801,11 @@ function($scope,samples){
 "use strict";
 
 angular.module("myPick10").run(["$templateCache", function($templateCache) {$templateCache.put("raceResults/raceResults.ng.template.html","<div>\n  <b>Race Results for {{rr.year}}/Race {{rr.race}}</b>\n  <form>\n    Year1:<input type=\"number\" ng-model=\"rr.year\" name=\"year\" min=\"1950\" max=\"2015\"/>\n    Race1:<input type=\"number\" ng-model=\"rr.race\" name=\"race\" min=\"1\" max=\"20\"/>\n  </form>\n</div>\n");
-$templateCache.put("welcome/login.ng.template.html","<div class=\"col-md-6 col-md-offset-3\">\n  <h1>Welcome - {{ vm.title }}</h1>\n  <h2>Login</h2>\n  <div ng-show=\"vm.error\" class=\"alert alert-danger\">{{vm.errorMessage}}</div>\n  <form name=\"form\" ng-submit=\"vm.login()\" role=\"form\">\n    <div class=\"form-group\" ng-class=\"{ \'has-error\': form.username.$dirty && form.username.$error.required }\">\n      <label for=\"username\">Username</label>\n      <input type=\"text\" name=\"username\" id=\"username\" class=\"form-control\" ng-model=\"vm.loginForm.username\" required />\n      <span ng-show=\"form.username.$dirty && form.username.$error.required\" class=\"help-block\">Username is required</span>\n    </div>\n    <div class=\"form-group\" ng-class=\"{ \'has-error\': form.password.$dirty && form.password.$error.required }\">\n      <label for=\"password\">Password</label>\n      <input type=\"password\" name=\"password\" id=\"password\" class=\"form-control\" ng-model=\"vm.loginForm.password\" required />\n      <span ng-show=\"form.password.$dirty && form.password.$error.required\" class=\"help-block\">Password is required</span>\n    </div>\n    <div class=\"form-actions\">\n      <button type=\"submit\" ng-disabled=\"form.$invalid || vm.disabled\" class=\"btn btn-primary\">Login</button>\n      <img ng-if=\"vm.dataLoading\" src=\"data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAkKAAAALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==\" />\n      <a href=\"#/register\" class=\"btn btn-link\">Register</a>\n    </div>\n  </form>\n</div>\n\n<!--<div class=\"alert alert-success\">-->\n  <!--<strong>Success!</strong> Indicates a successful or positive action.-->\n<!--</div>-->\n");
-$templateCache.put("welcome/register.ng.template.html","<div class=\"col-md-6 col-md-offset-3\">\n  <h2>Register for {{vm.title}}</h2>\n    <div ng-show=\"vm.error\" class=\"alert alert-danger\">{{vm.errorMessage}}</div>\n    <form class=\"form\" ng-submit=\"vm.register()\">\n      <div class=\"form-group\">\n        <label>Username</label>\n        <input type=\"text\" class=\"form-control\" name=\"username\" ng-model=\"vm.registerForm.username\" required>\n      </div>\n      <div class=\"form-group\">\n        <label>Password</label>\n        <input type=\"password\" class=\"form-control\" name=\"password\" ng-model=\"vm.registerForm.password\" required>\n      </div>\n      <div>\n        <button type=\"submit\" class=\"btn btn-default\" ng-disabled=\"vm.disabled\">Register</button>\n      </div>\n    </form>\n</div>\n");
-$templateCache.put("welcome/registrationConfirmation.ng.template.html","<div class=\"col-md-6 col-md-offset-3\">\n  <h2>Welcome {{vm.username}}</h2>\n  <h2>Thanks for joining F1 QuickPick!</h2>\n  <h3><a ng-href=\"#/login/{{vm.username}}\">Login</a> to get started!</h3>\n</div>\n");
-$templateCache.put("welcome/welcome.ng.template.html","<script src=\"../services/auth.ng.service.js\"></script>\n\n<div class=\"col-md-6 col-md-offset-3\">\n  <h1>Welcome - {{ vm.title }}</h1>\n\n  <div ng-controller=\"LogoutController as vm\">\n    <a ng-click=\'vm.logout()\' class=\"btn btn-default\">Logout</a>\n  </div>\n\n  <!--<h2>Login</h2>-->\n  <!--<form name=\"form\" ng-submit=\"vm.login()\" role=\"form\">-->\n    <!--<div class=\"form-group\" ng-class=\"{ \'has-error\': form.username.$dirty && form.username.$error.required }\">-->\n      <!--<label for=\"username\">Username</label>-->\n      <!--<input type=\"text\" name=\"username\" id=\"username\" class=\"form-control\" ng-model=\"vm.username\" required />-->\n      <!--<span ng-show=\"form.username.$dirty && form.username.$error.required\" class=\"help-block\">Username is required</span>-->\n    <!--</div>-->\n    <!--<div class=\"form-group\" ng-class=\"{ \'has-error\': form.password.$dirty && form.password.$error.required }\">-->\n      <!--<label for=\"password\">Password</label>-->\n      <!--<input type=\"password\" name=\"password\" id=\"password\" class=\"form-control\" ng-model=\"vm.password\" required />-->\n      <!--<span ng-show=\"form.password.$dirty && form.password.$error.required\" class=\"help-block\">Password is required</span>-->\n    <!--</div>-->\n    <!--<div class=\"form-actions\">-->\n      <!--<button type=\"submit\" ng-disabled=\"form.$invalid || vm.dataLoading\" class=\"btn btn-primary\">Login</button>-->\n      <!--<img ng-if=\"vm.dataLoading\" src=\"data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAkKAAAALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==\" />-->\n      <!--<a href=\"#/register\" class=\"btn btn-link\">Register</a>-->\n    <!--</div>-->\n  <!--</form>-->\n</div>\n");
+$templateCache.put("welcome/login.ng.template.html","<my-header></my-header>\n\n\n<div class=\"col-md-6 col-md-offset-3\">\n  <h1>Welcome - {{ vm.title }}</h1>\n  <h2>Login</h2>\n  <div ng-show=\"vm.error\" class=\"alert alert-danger\">{{vm.errorMessage}}</div>\n  <form name=\"form\" ng-submit=\"vm.login()\" role=\"form\">\n    <div class=\"form-group\" ng-class=\"{ \'has-error\': form.username.$dirty && form.username.$error.required }\">\n      <label for=\"username\">Username</label>\n      <input type=\"text\" name=\"username\" id=\"username\" class=\"form-control\" ng-model=\"vm.loginForm.username\" required />\n      <span ng-show=\"form.username.$dirty && form.username.$error.required\" class=\"help-block\">Username is required</span>\n    </div>\n    <div class=\"form-group\" ng-class=\"{ \'has-error\': form.password.$dirty && form.password.$error.required }\">\n      <label for=\"password\">Password</label>\n      <input type=\"password\" name=\"password\" id=\"password\" class=\"form-control\" ng-model=\"vm.loginForm.password\" required />\n      <span ng-show=\"form.password.$dirty && form.password.$error.required\" class=\"help-block\">Password is required</span>\n    </div>\n    <div class=\"form-actions\">\n      <button type=\"submit\" ng-disabled=\"form.$invalid || vm.disabled\" class=\"btn btn-primary\">Login</button>\n      <img ng-if=\"vm.dataLoading\" src=\"data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAkKAAAALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==\" />\n      <a href=\"#/register\" class=\"btn btn-link\">Register</a>\n    </div>\n  </form>\n</div>\n\n<!--<div class=\"alert alert-success\">-->\n  <!--<strong>Success!</strong> Indicates a successful or positive action.-->\n<!--</div>-->\n");
+$templateCache.put("welcome/register.ng.template.html","<my-header></my-header>\n\n<div class=\"col-md-6 col-md-offset-3\">\n  <h2>Register for {{vm.title}}</h2>\n    <div ng-show=\"vm.error\" class=\"alert alert-danger\">{{vm.errorMessage}}</div>\n    <form class=\"form\" ng-submit=\"vm.register()\">\n      <div class=\"form-group\">\n        <label>Username</label>\n        <input type=\"text\" class=\"form-control\" name=\"username\" ng-model=\"vm.registerForm.username\" required>\n      </div>\n      <div class=\"form-group\">\n        <label>Password</label>\n        <input type=\"password\" class=\"form-control\" name=\"password\" ng-model=\"vm.registerForm.password\" required>\n      </div>\n      <div>\n        <button type=\"submit\" class=\"btn btn-default\" ng-disabled=\"vm.disabled\">Register</button>\n      </div>\n    </form>\n</div>\n");
+$templateCache.put("welcome/registrationConfirmation.ng.template.html","<my-header></my-header>\n\n<div class=\"col-md-6 col-md-offset-3\">\n  <h2>Welcome {{vm.username}}</h2>\n  <h2>Thanks for joining F1 QuickPick!</h2>\n  <h3><a ng-href=\"#/login/{{vm.username}}\">Login</a> to get started!</h3>\n</div>\n");
+$templateCache.put("welcome/welcome.ng.template.html","<my-header></my-header>\n\n<div class=\"col-md-6 col-md-offset-3\">\n  <h1>Welcome - {{ vm.title }}</h1>\n\n  <div ng-controller=\"LogoutController as vm\">\n    <a ng-click=\'vm.logout()\' class=\"btn btn-default\">Logout</a>\n  </div>\n\n  <!--<h2>Login</h2>-->\n  <!--<form name=\"form\" ng-submit=\"vm.login()\" role=\"form\">-->\n    <!--<div class=\"form-group\" ng-class=\"{ \'has-error\': form.username.$dirty && form.username.$error.required }\">-->\n      <!--<label for=\"username\">Username</label>-->\n      <!--<input type=\"text\" name=\"username\" id=\"username\" class=\"form-control\" ng-model=\"vm.username\" required />-->\n      <!--<span ng-show=\"form.username.$dirty && form.username.$error.required\" class=\"help-block\">Username is required</span>-->\n    <!--</div>-->\n    <!--<div class=\"form-group\" ng-class=\"{ \'has-error\': form.password.$dirty && form.password.$error.required }\">-->\n      <!--<label for=\"password\">Password</label>-->\n      <!--<input type=\"password\" name=\"password\" id=\"password\" class=\"form-control\" ng-model=\"vm.password\" required />-->\n      <!--<span ng-show=\"form.password.$dirty && form.password.$error.required\" class=\"help-block\">Password is required</span>-->\n    <!--</div>-->\n    <!--<div class=\"form-actions\">-->\n      <!--<button type=\"submit\" ng-disabled=\"form.$invalid || vm.dataLoading\" class=\"btn btn-primary\">Login</button>-->\n      <!--<img ng-if=\"vm.dataLoading\" src=\"data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAkKAAAALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==\" />-->\n      <!--<a href=\"#/register\" class=\"btn btn-link\">Register</a>-->\n    <!--</div>-->\n  <!--</form>-->\n</div>\n");
+$templateCache.put("components/header/header.ng.template.html","<div class=\"container\">\n  <div class=\"row\">\n    <div class=\"col-xs-8 f1-title\">\n      {{vm.appTitle}}\n    </div>\n    <div class=\"col-xs-4 f1-title\" ng-if=\"vm.loggedIn\">\n      <div style=\"float: left\"><a href=\"/profile/{{ vm.player.username }}\">My Profile</a></div>\n      <div class=\"divider\"  style=\"float: right\"></div>\n      <div style=\"float: right\"><a href=\"/logout\">Logout</a></div>\n    </div>\n    <div class=\"col-xs-4 f1-title\" ng-if=\"!vm.loggedIn\">\n      User Is NOT Logged In\n    </div>\n  </div>\n</div>\n");
 $templateCache.put("components/sample/sample.ng.template.html","<div>\n    Try a number here: <input type=\"number\" name=\"input\" ng-model=\"sample\" ng-change=\"calculate()\"><br/>\n    After calling to the server, the value is now: <span>{{calculated}}</span>\n</div>\n");}]);
 }());
 
@@ -788,6 +825,26 @@ angular
       , controller: 'raceResultsController'
       , controllerAs: 'rr'
       , templateUrl: 'raceResults/raceResults.ng.template.html'
+    };
+  });
+}());
+
+;(function() {
+"use strict";
+
+angular
+
+  .module("myPick10")
+
+  .directive('myHeader', function() {
+    return {
+      restrict: 'E'
+      , transclude: true
+      , replace: true
+      , scope: true
+      , controller: 'myHeaderController'
+      , controllerAs: 'vm'
+      , templateUrl: 'components/header/header.ng.template.html'
     };
   });
 }());

@@ -23,6 +23,7 @@ angular
         if (next.access.restricted && AuthService.isLoggedIn() === false) {
           $log.debug('Auth route check - access not granted: ', {'restricted': next.access.restricted, 'user logged in': AuthService.isLoggedIn()});
           $location.path('/login');
+          $route.reload();
         } else {
           $log.debug('Auth route check - access granted: ', {'restricted': next.access.restricted, 'user logged in': AuthService.isLoggedIn()});
         }
@@ -31,6 +32,7 @@ angular
 
       //remove the broadcast subscription when scope is destroyed
       $rootScope.$on('$destroy', function() {
+        $log.debug('onRouteChangeStartBroadcast destroyed');
         onRouteChangeStartBroadcast();
       });
     }
