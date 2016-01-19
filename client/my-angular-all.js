@@ -338,6 +338,9 @@ function($routeProvider) {
 
           if(response && response.status == 200) {
             $log.debug('AuthService: user registered: response: ', response);
+            $log.debug('AuthService: response.status: ', response.status);
+            $log.debug('AuthService: response.data: ', response.data);
+            $log.debug('AuthService: response.data.token: ', response.data.token);
             user = true;
             deferred.resolve();
           } else {

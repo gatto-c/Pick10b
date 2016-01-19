@@ -3,9 +3,10 @@ var bcrypt   = require('bcrypt');
 var Schema = mongoose.Schema;
 var co = require('co');
 var logger = require('../../logger');
+var jwt = require('jsonwebtoken');
 
 var PlayerSchema = new Schema({
-  username: {type: String, required: true, trim: true},
+  username: {type: String, lowercase: true, unique: true, required: true, trim: true},
   password: {type: String, required: true},
   email: {type: String, required: true, trim: true},
   created: Date
@@ -22,6 +23,19 @@ var genHash = function(password) {
 // checking if password is valid
 PlayerSchema.methods.validPassword = function(password) {
   return bcrypt.compareSync(password, this.password);
+};
+
+PlayerSchema.methods.generateJWT = function() {
+  // set expiration to 60 days
+  var today = new Date();
+  var exp = new Date(today);
+  exp.setDate(today.getDate() + 60);
+
+  return jwt.sign({
+    _id: this._id,
+    username: this.username,
+    exp: parseInt(exp.getTime() / 1000)
+  }, 'SECRET');
 };
 
 /**

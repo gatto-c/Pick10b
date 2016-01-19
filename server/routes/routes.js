@@ -37,6 +37,7 @@ module.exports.anonymousRouteMiddleware = function(passport) {
   routes.post('/register', function*(next) {
     //http://tastenjesus.de/koajs-first-application-using-kamn-stack-part-12/
     //https://github.com/dozoisch/koa-react-full-example/blob/master/
+    console.log('>>>>>/register');
 
     var ctx = this;
 
@@ -47,11 +48,17 @@ module.exports.anonymousRouteMiddleware = function(passport) {
     try {
       yield player.save();
       ctx.status = 200;
-      ctx.body = { success: true };
+
+      //var responseToken = {token: player.generateJWT()};
+      //logger.debug('>>>>>responseToken: ', responseToken);
+
+      //ctx.body = { success: true };
+      ctx.body = {token: player.generateJWT()};
     } catch (err) {
       //if this is an error condition return relevant error to caller
       ctx.status = (err.message == 'duplicate' ? 409 : 401); //409 represents a duplicate player, 401 a general error
       ctx.body = { success: false };
+      ctx.body = {}
     }
   });
 
