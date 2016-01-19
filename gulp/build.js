@@ -76,7 +76,8 @@ gulp.task('sass', function () {
     .pipe(sourcemaps.init())
     .pipe(sass({outputStyle: 'compressed'}).on('error', sass.logError))
     .pipe(sourcemaps.write())
-    .pipe(gulp.dest('client'));
+    .pipe(concat('f1-quickpick.css'))
+    .pipe(gulp.dest('client/css'));
 });
 
 /**

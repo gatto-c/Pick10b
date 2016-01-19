@@ -1,3 +1,7 @@
+//http://mherman.org/blog/2015/07/02/handling-user-authentication-with-the-mean-stack/#.VocdH3UrJ7g
+//https://thinkster.io/mean-stack-tutorial#adding-authentication-via-passport
+
+
 (function() {
   'use strict';
 
@@ -15,13 +19,15 @@
      * @param $q - support promises
      * @param $log - used for console logging
      * @param MyHttp - proxy to rest calls
-     * @returns {{isLoggedIn: isLoggedIn, getUserStatus: getUserStatus, login: login, logout: logout, register: register}}
+     * @returns {{isLoggedIn: isLoggedIn, getUserStatus: getUserStatus, getUserData: getUserData, login: login, logout: logout, register: register}}
      * @constructor
      */
     function AuthService($q, $log, MyHttp) {
+      $log.debug('AuthService Initializing...');
+
       // create user variable
       var user = null;
-
+      var userName = null;
 
       /**
        * returns true if user evaluates to true - a user is logged in - otherwise it returns false
@@ -41,6 +47,10 @@
        */
       function getUserStatus() {
         return user;
+      }
+
+      function getUserData() {
+        return {username: userName};
       }
 
       /**
@@ -69,10 +79,12 @@
           if(data && data.success) {
             $log.debug('AuthService: user authenticated: data: ', data);
             user = true;
+            userName = username;
             deferred.resolve();
           } else {
             $log.debug('AuthService: user NOT authenticated, data: ', data);
             user = false;
+            userName = null;
             deferred.reject();
           }
         });
@@ -159,6 +171,7 @@
       return ({
         isLoggedIn: isLoggedIn,
         getUserStatus: getUserStatus,
+        getUserData: getUserData,
         login: login,
         logout: logout,
         register: register
