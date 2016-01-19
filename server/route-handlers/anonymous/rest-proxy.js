@@ -6,7 +6,7 @@ const samples = require('data-access/samples-generator');
 /**
  * resolveRequest
  * Proxy a request through to the microservice that resolves it.
- * 
+ *
  * @param string host
  * @param string action
  * @param array args
@@ -87,7 +87,7 @@ function* resolveRequestPost(host, action, args) {
  * resolveRequest
  * Proxy action for microservice class-action-rest-api.  Uses session
  * to inject clientId into any microservice requests needing it.
- * 
+ *
  * @author Evan King
  * @param string action Name of the action to call from the microservice
  * @param int caseId Id value only required for microservice routes that use it

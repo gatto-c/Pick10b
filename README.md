@@ -1,2 +1,4 @@
 # Pick10b
-Pick10
+
+===first push
+ git push origin [branch-name]

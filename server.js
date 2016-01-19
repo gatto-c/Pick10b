@@ -12,21 +12,24 @@ const getIdentity = function(){
 };
 
 module.exports.startServer = function(config) {
-    
+
     // lib
     const
         koa = require('koa'),
         koaRender = require('koa-render'),
         bodyParser = require('koa-bodyparser'),
+        logger = require('./logger'),
         session = require('koa-generic-session'),
+        mongoStore = require('koa-generic-session-mongo'),
         mongo = require('koa-mongo'),
+        mongoose = require('mongoose'),
         passport = require('koa-passport');
-    
+
     // integration
     const
         serveStaticContent = require('middleware/my-koa-static-folder'),
         routes = require('routes/routes');
-    
+
     // init
     const
         app = koa(),
@@ -37,7 +40,8 @@ module.exports.startServer = function(config) {
 
     app.keys = ['6AD7BC9C-F6B5-4384-A892-43D3BE57D89F'];
     app.use(session({
-        //store: new MysqlStore(config.db),
+        key: 'Pick10',
+        store: new mongoStore({url: config.mongoUri}),
         rolling: true,
         cookie: {maxage: FIFTEEN_MINUTES}
     }));
@@ -58,13 +62,34 @@ module.exports.startServer = function(config) {
     }));
 
     // todo: use mongo
-//    app.use(mongo({
-//        uri: config.mongoUri,
-//        max: 100,
-//        min: 1,
-//        timeout: 30000,
-//        log: false
-//    }));
+    mongoose.connect(config.mongoUri);
+    //app.use(mongo({
+    //    uri: config.mongoUri,
+    //    max: 100,
+    //    min: 1,
+    //    timeout: 30000,
+    //    log: false
+    //}));
+
+
+    ////create new model for test
+    //var Player = require('./server/models/player');
+    //var player = new Player({username: "user1", password: "abc123", email: "test1@test.com"});
+    //player.password = player.generateHash(player.password);
+    //
+    //logger.log('debug', 'password: ', player.password);
+    //logger.log('debug', 'password valid: ', player.validPassword('abc123'));
+    //
+    //
+    ////save model to MongoDB
+    //player.save(function (err) {
+    //  if (err) {
+    //    return err;
+    //  }
+    //  else {
+    //    logger.log('info', 'Player saved: ', player.username);
+    //  }
+    //});
 
     /////////////////////////////////////////////////////////
     // body parser
@@ -72,10 +97,18 @@ module.exports.startServer = function(config) {
     app.use(bodyParser());
 
     /////////////////////////////////////////////////////////
+    // authentication
+    /////////////////////////////////////////////////////////
+    require('./auth');
+    app.use(passport.initialize());
+    app.use(passport.session());
+
+    /////////////////////////////////////////////////////////
     // Anonymous routes
     /////////////////////////////////////////////////////////
     // static files
     app.use(serveStaticContent(__dirname, './client'));
+
     // anonymous API calls
     app.use(routes.anonymousRouteMiddleware(passport));
 

@@ -1,3 +1,4 @@
+/* eslint-disable */
 angular
 
 .module("myPick10")
@@ -14,5 +15,5 @@ function($scope,samples){
         $scope.calculated=sample;
       });
   }
-
 }]);
+/* eslint-enable */

@@ -1,5 +1,5 @@
 // Karma configuration
-// Generated on Wed Aug 05 2015 10:06:13 GMT-0300 (ADT)
+// Generated on Sun Dec 20 2015 21:27:29 GMT-0400 (AST)
 
 module.exports = function(config) {
   config.set({
@@ -10,24 +10,12 @@ module.exports = function(config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['mocha', 'chai'],
+    frameworks: ['mocha'],
 
 
     // list of files / patterns to load in the browser
     files: [
-      'client/js/moment/moment.min.js',
-      'client/js/angular-1.3.4/angular.min.js',
-      'client/js/angular-1.3.4/angular-mocks.js',
-      'client/js/lodash-3.10.1/lodash.js',
-      'client/js/angular-1.3.4/angular-cookies.js',
-      'client/js/ui-grid.js',
-      'client/js/ui-bootstrap-0.13.0/ui-bootstrap-tpls-0.13.0.js',
-      'client/js/angular-1.3.4/angular-route.js',
-      'client/my-angular-all.js',
-      'client/my-ng-files/**/*.spec.js',
-
-      //fixtures
-      'dummy-json/output/*.js'
+      'client/my-ng-files/**/*spec.js'
     ],
 
 
@@ -45,15 +33,8 @@ module.exports = function(config) {
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['progress', 'html'],
+    reporters: ['progress'],
 
-    htmlReporter: {
-      outputFile: 'test/unit_test_reports/efr_unit_tests.html',
-
-      // Optional
-      pageTitle: 'EFR Unit Tests',
-      subPageTitle: 'EFR Application Unit Test Results'
-    },
 
     // web server port
     port: 9876,
@@ -74,11 +55,15 @@ module.exports = function(config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['PhantomJS'],
+    browsers: ['Chrome'],
 
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
-    singleRun: false
+    singleRun: false,
+
+    // Concurrency level
+    // how many browser should be started simultanous
+    concurrency: Infinity
   })
-};
+}
