@@ -23,7 +23,8 @@ module.exports.startServer = function(config) {
         mongoStore = require('koa-generic-session-mongo'),
         mongo = require('koa-mongo'),
         mongoose = require('mongoose'),
-        passport = require('koa-passport');
+        passport = require('koa-passport'),
+        jwt = require('koa-jwt');
 
     // integration
     const
@@ -52,6 +53,9 @@ module.exports.startServer = function(config) {
             console.log('no route handler', this.path);
         }
     });
+
+    //use jwt token if available - allow all requests to be processed but require auth downstream
+    app.use(jwt({ secret: config.jwtSecret, passthrough: true }));
 
     /////////////////////////////////////////////////////////
     // establish the server-side templates

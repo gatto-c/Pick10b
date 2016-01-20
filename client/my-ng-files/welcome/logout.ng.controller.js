@@ -15,7 +15,7 @@
     vm.title = appTitle;
 
     vm.logout = function() {
-      $log.debug('Logging out user -  current status: ', AuthService.getUserStatus());
+      $log.debug('Logging out user -  current status: ', AuthService.currentUser());
 
       AuthService.logout()
       .then( function() {

@@ -18,7 +18,7 @@
     //vm.registerForm.username = 'user1';
     //vm.registerForm.password = 'abc123';
 
-    $log.debug('Registration - current user status: ', AuthService.getUserStatus());
+    $log.debug('Registration - current user status: ', AuthService.currentUser());
 
     vm.register = function () {
       $log.debug('Registering new player: vm: ', vm.registerForm.username);

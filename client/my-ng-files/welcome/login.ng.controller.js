@@ -21,7 +21,7 @@
       }
       //vm.loginForm = {username: 'user1', password: 'abc123'};
 
-      $log.debug('Login Controller: getUserStatus: ', AuthService.getUserStatus());
+      $log.debug('Login Controller: getUserStatus: ', AuthService.currentUser());
 
 
       vm.login = function () {
