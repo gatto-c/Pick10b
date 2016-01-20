@@ -3,7 +3,7 @@
 const cluster = require('cluster')
     , os = require('os')
     , _  = require('lodash')
-    , config  = require('./config.js')[process.env['FRT_ENV']] || require('./config.js')['development']
+    , config  = require('./config.js')[process.env['F1QuickPick_ENV']] || require('./config.js')['development']
     , server = require('./server.js');
 
 let startServer = function() {

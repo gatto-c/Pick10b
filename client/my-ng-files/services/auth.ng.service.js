@@ -12,45 +12,50 @@
     .service('AuthService', AuthService);
 
     // inject dependencies
-    AuthService.$inject = ['$q', '$log', 'MyHttp'];
+    AuthService.$inject = ['$q', '$log', '$window', 'MyHttp', 'lsTokenName'];
+
 
     /**
      * Standard authorization/registration functionality
      * @param $q - support promises
      * @param $log - used for console logging
      * @param MyHttp - proxy to rest calls
-     * @returns {{isLoggedIn: isLoggedIn, getUserStatus: getUserStatus, getUserData: getUserData, login: login, logout: logout, register: register}}
+     * @param lsTokenName - the name of the token to use from local storage
+     * @returns {{isLoggedIn: isLoggedIn, currentUser: currentUser, saveToken: saveToken, getToken: getToken, login: login, logout: logout, register: register}}
      * @constructor
      */
-    function AuthService($q, $log, MyHttp) {
+    function AuthService($q, $log, $window, MyHttp, lsTokenName) {
       $log.debug('AuthService Initializing...');
 
-      // create user variable
-      var user = null;
-      var userName = null;
-
-      /**
-       * returns true if user evaluates to true - a user is logged in - otherwise it returns false
-       * @returns {boolean}
-       */
       function isLoggedIn() {
-        if(user) {
-          return true;
+        var token = getToken();
+
+        $log.debug('isLoggedIn called, token is:', token);
+
+        if(token){
+          //var payload = JSON.parse($window.atob(token.split('.')[1]));
+          var payload = angular.fromJson($window.atob(token.split('.')[1]));
+          return payload.exp > Date.now() / 1000;
         } else {
           return false;
         }
       }
 
-      /**
-       * returns user object (thus status)
-       * @returns {boolean}
-       */
-      function getUserStatus() {
-        return user;
+      function currentUser() {
+        if(isLoggedIn()){
+          var token = getToken();
+          //var payload = JSON.parse($window.atob(token.split('.')[1]));
+          var payload = angular.fromJson($window.atob(token.split('.')[1]));
+          return payload.username;
+        }
       }
 
-      function getUserData() {
-        return {username: userName};
+      function saveToken(token) {
+        $window.localStorage[lsTokenName] = token;
+      }
+
+      function getToken() {
+        return $window.localStorage[lsTokenName];
       }
 
       /**
@@ -78,13 +83,10 @@
         myPromise.then(function(data) {
           if(data && data.success) {
             $log.debug('AuthService: user authenticated: data: ', data);
-            user = true;
-            userName = username;
+            saveToken(data.token);
             deferred.resolve();
           } else {
             $log.debug('AuthService: user NOT authenticated, data: ', data);
-            user = false;
-            userName = null;
             deferred.reject();
           }
         });
@@ -120,11 +122,13 @@
 
           if(response && response.status == 200) {
             $log.debug('AuthService: user registered: response: ', response);
-            user = true;
+            $log.debug('AuthService: response.status: ', response.status);
+            $log.debug('AuthService: response.data: ', response.data);
+            $log.debug('AuthService: response.data.token: ', response.data.token);
+            saveToken(response.data.token);
             deferred.resolve();
           } else {
             $log.debug('AuthService: user NOT registered(1), response: ', response);
-            user = false;
             deferred.reject(response);
           }
         });
@@ -154,11 +158,10 @@
           $log.debug('AuthService: data: ', data.status);
           if(data && data.status == 200) {
             $log.debug('Successfully logged out');
-            user = false;
+            $window.localStorage.removeItem(lsTokenName);
             deferred.resolve();
           } else {
             $log.error('Logout error: ', data);
-            user = true;
             deferred.reject();
           }
         });
@@ -170,8 +173,9 @@
       // return available functions for use in controllers
       return ({
         isLoggedIn: isLoggedIn,
-        getUserStatus: getUserStatus,
-        getUserData: getUserData,
+        currentUser: currentUser,
+        saveToken: saveToken,
+        getToken: getToken,
         login: login,
         logout: logout,
         register: register
