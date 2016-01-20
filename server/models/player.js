@@ -4,6 +4,8 @@ var Schema = mongoose.Schema;
 var co = require('co');
 var logger = require('../../logger');
 var jwt = require('jsonwebtoken');
+var jwt = require('jsonwebtoken');
+var config = require('../../config.js')[process.env['F1QuickPick_ENV']] || require('../../config.js')['development'];
 
 var PlayerSchema = new Schema({
   username: {type: String, lowercase: true, unique: true, required: true, trim: true},
@@ -35,7 +37,7 @@ PlayerSchema.methods.generateJWT = function() {
     _id: this._id,
     username: this.username,
     exp: parseInt(exp.getTime() / 1000)
-  }, 'SECRET');
+  }, config.jwtSecret);
 };
 
 /**
