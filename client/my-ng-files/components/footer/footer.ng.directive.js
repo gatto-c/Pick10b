@@ -2,14 +2,15 @@ angular
 
   .module("myPick10")
 
-  .directive('appHeader', function() {
+  .directive('appFooter', function() {
     return {
       restrict: 'E'
       , transclude: true
       , replace: true
       , scope: true
-      , controller: 'appHeaderController'
+      , controller: 'appFooterController'
       , controllerAs: 'vm'
-      , templateUrl: 'components/header/header.ng.template.html'
+      , templateUrl: 'components/footer/footer.ng.template.html'
     };
   });
+

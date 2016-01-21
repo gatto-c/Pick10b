@@ -8,13 +8,13 @@ angular
 function($routeProvider) {
   $routeProvider
   .when('/', {
-      templateUrl: '/client/my-ng-files/welcome/welcome.ng.template.html',
+      templateUrl: '/client/my-ng-files/components/welcome/welcome.ng.template.html',
       controller: 'WelcomeController',
       controllerAs: 'vm',
       access: {restricted: true}
   })
   .when('/login/:username?', {
-    templateUrl: '/client/my-ng-files/welcome/login.ng.template.html',
+    templateUrl: '/client/my-ng-files/components/login/login.ng.template.html',
     controller: 'LoginController',
     controllerAs: 'vm',
     access: {restricted: false}
@@ -25,13 +25,13 @@ function($routeProvider) {
       access: {restricted: true}
   })
   .when('/register', {
-      templateUrl: '/client/my-ng-files/welcome/register.ng.template.html',
-      controller: 'RegisterController',
+      templateUrl: '/client/my-ng-files/components/registration/registration.ng.template.html',
+      controller: 'RegistrationController',
       controllerAs: 'vm',
       access: {restricted: false}
   })
   .when('/registrationConfirmation/:username', {
-      templateUrl: '/client/my-ng-files/welcome/registrationConfirmation.ng.template.html',
+      templateUrl: '/client/my-ng-files/components/register/registrationConfirmation.ng.template.html',
       controller: 'RegistrationConfirmationController',
       controllerAs: 'vm',
       access: {restricted: false}

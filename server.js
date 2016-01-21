@@ -55,7 +55,7 @@ module.exports.startServer = function(config) {
     });
 
     //use jwt token if available - allow all requests to be processed but require auth downstream
-    app.use(jwt({ secret: config.jwtSecret, passthrough: true }));
+    //app.use(jwt({ secret: config.jwtSecret, passthrough: true }));
 
     /////////////////////////////////////////////////////////
     // establish the server-side templates

@@ -5,16 +5,14 @@
 
     .module("myPick10")
 
-    .controller('myHeaderController', myHeaderController);
+    .controller('appHeaderController', appHeaderController);
 
-    myHeaderController.$inject = ['$log', 'appTitle', 'AuthService'];
+  appHeaderController.$inject = ['$log', 'appTitle', 'AuthService'];
 
-    function myHeaderController($log, appTitle, AuthService) {
+    function appHeaderController($log, appTitle, AuthService) {
       var vm = this;
       vm.appTitle = appTitle;
       vm.loggedIn = AuthService.isLoggedIn();
       vm.player = AuthService.currentUser();
-
-      $log.debug('HeaderController.vm.player: ', vm.player);
     }
 })();

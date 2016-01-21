@@ -4,7 +4,7 @@ $primary-color: #111;
 .f1-title {
   font: 100% $font-stack;
   color: $primary-color;
-  font-size: 26px;
+  font-size: 28px;
 }
 
 .divider{
@@ -13,4 +13,8 @@ $primary-color: #111;
   top:10%;
   bottom:10%;
   border-left:1px solid darkslategrey;
+}
+
+.footer-row {
+  background-color: transparent;
 }

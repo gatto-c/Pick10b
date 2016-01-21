@@ -41,8 +41,6 @@ module.exports.anonymousRouteMiddleware = function(passport) {
   routes.post('/register', function*(next) {
     //http://tastenjesus.de/koajs-first-application-using-kamn-stack-part-12/
     //https://github.com/dozoisch/koa-react-full-example/blob/master/
-    console.log('>>>>>/register');
-
     var ctx = this;
 
     //create a new player mongoose model
